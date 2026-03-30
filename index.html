@@ -600,7 +600,7 @@ async function carregarDados() {
 
   try {
     // Lê a planilha como CSV público (a planilha precisa estar pública para leitura)
-    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=1427452575`;
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=1427452575&headers=1`;
     const res=await fetch(url);
     const text=await res.text();
     // Remove o wrapper google.visualization.Query.setResponse(...)
@@ -615,21 +615,23 @@ async function carregarDados() {
       const m = s.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);
       if (m) {
         const [,y,mo,d,h,mi,se]=m;
-        const dt = new Date(+y, +mo, +d, +(h||0), +(mi||0), +(se||0));
-        if (h !== undefined)
-          return dt.toLocaleString('pt-BR');
-        return dt.toLocaleDateString('pt-BR');
+        const dd = String(+d).padStart(2,'0');
+        const mm = String(+mo+1).padStart(2,'0'); // mês é 0-based na API do Google
+        const yyyy = y;
+        if (h !== undefined) {
+          const hh = String(+h).padStart(2,'0');
+          const min = String(+mi).padStart(2,'0');
+          const ss = String(+(se||0)).padStart(2,'0');
+          return `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+        }
+        return `${dd}/${mm}/${yyyy}`;
       }
       return s;
     }
 
-    // Ignora linha de cabeçalho caso a API a inclua nas rows
-    const CABECALHOS = ['id','consultor','consultor(a)','nome','candidato','data','registrado'];
+    // Com headers=1 a API já exclui o cabeçalho das rows; filtra apenas linhas sem consultor
     todosDados=rows
-      .filter(r => {
-        const val = String(r.c[1]?.v ?? '').toLowerCase().trim();
-        return val && !CABECALHOS.some(c => val.includes(c));
-      })
+      .filter(r => r.c && r.c[1]?.v)
       .map((r,i)=>({
         id:         r.c[0]?.v ?? i+1,
         consultor:  r.c[1]?.v ?? '',
@@ -640,8 +642,7 @@ async function carregarDados() {
         reg_em:     parseGDate(r.c[7]?.v),
         tipo_curso: r.c[8]?.v ?? '',
         gestor:     r.c[9]?.v ?? '',
-      }))
-      .filter(d=>d.consultor);
+      }));
 
     const agora=new Date().toLocaleString('pt-BR');
     document.getElementById('dashSub').textContent=`Atualizado em: ${agora} · ${todosDados.length} registro(s)`;
@@ -660,19 +661,18 @@ async function carregarDados() {
 
 function atualizarKPIs(){
   const agora = new Date();
-  const hojeStr = `${agora.getFullYear()}-${String(agora.getMonth()+1).padStart(2,'0')}-${String(agora.getDate()).padStart(2,'0')}`;
+  const hojeDD  = String(agora.getDate()).padStart(2,'0');
+  const hogeMM  = String(agora.getMonth()+1).padStart(2,'0');
+  const hojeYYYY = String(agora.getFullYear());
+  // formato esperado de reg_em: "dd/mm/yyyy hh:mm:ss" ou "dd/mm/yyyy"
+  const hojePrefix = `${hojeDD}/${hogeMM}/${hojeYYYY}`;
 
   document.getElementById('kTotal').textContent=filtrados.length;
   document.getElementById('kConsult').textContent=new Set(filtrados.map(d=>d.consultor).filter(Boolean)).size;
 
-  // Compara usando reg_em já convertido pelo parseGDate (formato dd/mm/yyyy hh:mm:ss)
   document.getElementById('kHoje').textContent=filtrados.filter(d=>{
     if(!d.reg_em) return false;
-    // reg_em pode ser "27/03/2026 14:42:17" ou "27/03/2026"
-    const partes = d.reg_em.split(' ')[0].split('/');
-    if(partes.length < 3) return false;
-    const dataStr = `${partes[2]}-${partes[1].padStart(2,'0')}-${partes[0].padStart(2,'0')}`;
-    return dataStr === hojeStr;
+    return d.reg_em.startsWith(hojePrefix);
   }).length;
 }
 
