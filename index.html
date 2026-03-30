@@ -265,11 +265,7 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
           <textarea class="ctrl" id="observacoes" placeholder="Observações relevantes sobre a matrícula..."></textarea>
         </div>
         <div class="group">
-          <label class="label"><span class="num">6</span> Polo <span class="req">*</span></label>
-          <div class="sw"><select class="ctrl" id="polo" required><option value="">Selecione o Polo</option></select></div>
-        </div>
-        <div class="group">
-          <label class="label"><span class="num">7</span> Tipo de Curso <span class="req">*</span></label>
+          <label class="label"><span class="num">6</span> Tipo de Curso <span class="req">*</span></label>
           <div class="sw">
             <select class="ctrl" id="tipoCurso" required>
               <option value="">Selecione o Tipo de Curso</option>
@@ -279,7 +275,7 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
           </div>
         </div>
         <div class="group">
-          <label class="label"><span class="num">8</span> Gestor(a) <span class="req">*</span></label>
+          <label class="label"><span class="num">7</span> Gestor(a) <span class="req">*</span></label>
           <div class="sw">
             <select class="ctrl" id="gestor" required>
               <option value="">Selecione o(a) Gestor(a)</option>
@@ -342,8 +338,7 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
 
     <div class="kpi-grid">
       <div class="kpi"><div class="kpi-lbl">Total de Registros</div><div class="kpi-val" id="kTotal">–</div></div>
-      <div class="kpi green"><div class="kpi-lbl">Consultores Ativos</div><div class="kpi-val" id="kConsult">–</div></div>
-      <div class="kpi amber"><div class="kpi-lbl">Polos Abrangidos</div><div class="kpi-val" id="kPolos">–</div></div>
+      <div class="kpi green"><div class="kpi-lbl">Consultores Ativos</div><div class="kpi-val" id="kConsult">–</div></div></div>
       <div class="kpi"><div class="kpi-lbl">Registros Hoje</div><div class="kpi-val" id="kHoje">–</div></div>
     </div>
 
@@ -383,7 +378,7 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
           <thead>
             <tr>
               <th>#</th><th>Consultor(a)</th><th>Nº Candidato</th>
-              <th>Data Pgto.</th><th>Polo</th><th>Tipo</th>
+              <th>Data Pgto.</th><th>Tipo</th>
               <th>Gestor(a)</th><th>Observações</th>
               <th>Link</th><th>Registrado Em</th>
             </tr>
@@ -487,7 +482,6 @@ const CONSULTORES = [
   // ── Adicione novos consultores aqui, um por linha ──
 ];
 
-const POLOS = ["Abelardo Luz - SC","Abreu e Lima - PE","Açailândia - MA","Acaraú - CE","Adamantina - SP","Afogados da Ingazeira - PE","Afrânio - PE","Afuá - PA","Águas Belas - PE","Águas Formosas - MG","Águas Lindas de Goiás - GO","Água Branca - PI","Alagoinhas - BA","Alegrete - RS","Alfenas - MG","Almirante Tamandaré - PR","Alta Floresta - MT","Alta Floresta D'Oeste - RO","Altamira - PA","Altônia - PR","Alvorada - RS","Amarante do Maranhão - MA","Amambai - MS","Americana - SP","Amontada - CE","Amparo - SP","Anajás - PA","Anápolis - GO","Ananindeua - Centro - PA","Ananindeua - Cidade Nova - PA","Andradina - SP","Andradas - MG","Andirá - PR","Angra dos Reis - RJ","Aparecida - SP","Aparecida de Goiânia - GO","Aparecida do Taboado - MS","Apiaí - SP","Apucarana - PR","Araguaína - TO","Araguari - MG","Araguatins - TO","Arapongas - PR","Araranguá - SC","Araras - SP","Araraquara - SP","Araripina - PE","Araruama - RJ","Araçatuba - SP","Araxá - MG","Arcos - MG","Areia Branca - RN","Ariquemes - RO","Artur Nogueira - SP","Arujá - SP","Assis - SP","Assis Chateaubriand - PR","Astorga - PR","Atibaia - SP","Augustinópolis - TO","Avaré - SP","Bagé - RS","Bagre - PA","Balneário Camboriú - SC","Balsas - MA","Bandeirantes - PR","Barbalha - CE","Barcarena - PA","Barra Bonita - SP","Barra Mansa - RJ","Barra Velha - SC","Barra do Corda - MA","Barra do Garças - MT","Barra do Piraí - RJ","Barreiras - BA","Barreiros - PE","Barretos - SP","Barreirinhas - MA","Barão de Cocais - MG","Batatais - SP","Bataguassu - MS","Batalha - PI","Baturité - CE","Bauru - Cidade Universitária - SP","Bauru - Estoril - SP","Barueri - Alphaville - SP","Barueri - SP","Bebedouro - SP","Beberibe - CE","Bela Cruz - CE","Belém - PA","Belford Roxo - RJ","Belo Horizonte - Barreiro - MG","Belo Horizonte - Floresta - MG","Belo Horizonte - Padre Eustáquio - MG","Belo Horizonte - Pampulha - MG","Belo Horizonte - Planalto - MG","Belo Horizonte - Renascença - MG","Belo Horizonte - Santa Lúcia - MG","Belo Horizonte - Savassi - MG","Belo Horizonte - Venda Nova - MG","Bento Gonçalves - RS","Betim - MG","Birigui - SP","Bituruna - PR","Blumenau - SC","Boa Esperança - MG","Boa Vista - RR","Botucatu - SP","Bragança - PA","Bragança Paulista - SP","Braço do Norte - SC","Brasília - Asa Sul - DF","Brejo Santo - CE","Brumado - BA","Brumadinho - MG","Brusque - SC","Buritis - RO","Butiá - RS","Caarapó - MS","Caçador - SC","Cacoal - RO","Caetité - BA","Cafelândia - PR","Cajati - SP","Cajazeiras - PB","Camaquã - RS","Cambé - PR","Camboriú - SC","Camocim - CE","Camaçari - BA","Camaragibe - PE","Campina Grande - PB","Campinas - SP","Campo Grande - MS","Campo Mourão - PR","Campos dos Goytacazes - RJ","Canindé - CE","Canoas - RS","Capanema - PR","Capivari de Baixo - SC","Caraguatatuba - SP","Cariacica - ES","Caruaru - PE","Cascavel - PR","Castanhal - PA","Catalão - GO","Cataguases - MG","Catanduva - SP","Caucaia - CE","Caxias do Sul - RS","Ceilândia - DF","Chapecó - SC","Charqueadas - RS","Cianorte - PR","Colatina - ES","Colombo - PR","Concórdia - SC","Contagem - MG","Cornélio Procópio - PR","Coronel Fabriciano - MG","Corumbá - MS","Cosmópolis - SP","Cotia - SP","Crato - CE","Criciúma - SC","Cruzeiro do Sul - AC","Cubatão - SP","Cuiabá - MT","Curitiba - Boa Vista - PR","Curitiba - Cajuru - PR","Curitiba - Campus - PR","Curitiba - Centro - PR","Curitiba - Cidade Industrial - PR","Curitiba - Hauer - PR","Curitiba - Pinheirinho - PR","Diadema - SP","Divinópolis - MG","Dois Vizinhos - PR","Dom Pedrito - RS","Dourados - MS","Duque de Caxias - RJ","Erechim - RS","Escada - PE","Esteio - RS","Eunápolis - BA","Eusébio - CE","Farroupilha - RS","Fazenda Rio Grande - PR","Feira de Santana - BA","Fernandópolis - SP","Floresta - PE","Floriano - PI","Florianópolis - SC","Formiga - MG","Forquilhinha - SC","Fortaleza - Centro - CE","Fortaleza - Parangaba - CE","Fortaleza - Washington Soares - CE","Foz do Iguaçu - PR","Franca - SP","Francisco Beltrão - PR","Frederico Westphalen - RS","Frutal - MG","Gama - DF","Garanhuns - PE","Gaspar - SC","Goiânia - GO","Governador Valadares - MG","Gravataí - RS","Guarapari - ES","Guarapuava - PR","Guaratinguetá - SP","Guarujá - SP","Guarulhos - SP","Guaxupé - MG","Horizonte - CE","Hortolândia - SP","Ilhéus - BA","Imbituba - SC","Imperatriz - MA","Indaial - SC","Indaiatuba - SP","Ipatinga - MG","Irati - PR","Itabaiana - SE","Itabira - MG","Itabuna - BA","Itaguaí - RJ","Itajaí - SC","Itajubá - MG","Itapecerica da Serra - SP","Itapema - SC","Itapetinga - BA","Itapetininga - SP","Itapeva - SP","Itapevi - SP","Itapipoca - CE","Itu - SP","Ituiutaba - MG","Jacareí - SP","Jacobina - BA","Jaraguá do Sul - SC","Jataí - GO","Jaú - SP","Ji-Paraná - RO","Joaçaba - SC","João Pessoa - PB","Joinville - SC","Juazeiro do Norte - CE","Juiz de Fora - MG","Jundiaí - SP","Lajeado - RS","Laranjeiras do Sul - PR","Lauro de Freitas - BA","Lavras - MG","Leme - SP","Limeira - SP","Linhares - ES","Lins - SP","Londrina - PR","Lorena - SP","Lucas do Rio Verde - MT","Luziânia - GO","Macaé - RJ","Macapá - AP","Maceió - AL","Manaus - AM","Marabá - PA","Maracanaú - CE","Marília - SP","Maringá - PR","Mauá - SP","Medianeira - PR","Mineiros - GO","Mirassol - SP","Mogi das Cruzes - SP","Montes Claros - MG","Mossoró - RN","Muriaé - MG","Natal - RN","Naviraí - MS","Nilópolis - RJ","Niterói - RJ","Nova Iguaçu - RJ","Nova Lima - MG","Novo Hamburgo - RS","Olinda - PE","Osasco - SP","Osório - RS","Ourinhos - SP","Ouro Preto - MG","Palmas - TO","Palmeira das Missões - RS","Palotina - PR","Paranaguá - PR","Parnamirim - RN","Passo Fundo - RS","Pato Branco - PR","Patos de Minas - MG","Paulo Afonso - BA","Paulista - PE","Pelotas - RS","Penedo - AL","Petrolina - PE","Petrópolis - RJ","Picos - PI","Piracicaba - SP","Pirapora - MG","Piraquara - PR","Planaltina - DF","Poços de Caldas - MG","Ponta Grossa - PR","Ponta Porã - MS","Porto Alegre - RS","Porto Ferreira - SP","Porto Nacional - TO","Porto Seguro - BA","Porto Velho - RO","Pouso Alegre - MG","Presidente Prudente - SP","Quixadá - CE","Redenção - PA","Resende - RJ","Ribeirão Preto - SP","Rio Branco - AC","Rio Claro - SP","Rio Grande - RS","Rio Verde - GO","Rio de Janeiro - Bangu - RJ","Rio de Janeiro - Barra da Tijuca - RJ","Rio de Janeiro - Bonsucesso - RJ","Rio de Janeiro - Botafogo - RJ","Rio de Janeiro - Campo Grande - RJ","Rio de Janeiro - Centro - RJ","Rio de Janeiro - Copacabana - RJ","Rio de Janeiro - Jacarepaguá - RJ","Rio de Janeiro - Madureira - RJ","Rio de Janeiro - Penha - RJ","Rio de Janeiro - Realengo - RJ","Rio de Janeiro - Santa Cruz - RJ","Rio de Janeiro - Tijuca - RJ","Rio de Janeiro - Vila Isabel - RJ","Rolândia - PR","Rondonópolis - MT","Rosana - SP","Salvador - BA","Santa Cruz do Sul - RS","Santa Maria - RS","Santa Rosa - RS","Santana de Parnaíba - SP","Santarém - PA","Santiago - RS","Santo André - SP","Santos - SP","São Bernardo do Campo - SP","São Carlos - SP","São Gonçalo - RJ","São João de Meriti - RJ","São José - SC","São José do Rio Preto - SP","São José dos Campos - SP","São José dos Pinhais - PR","São Leopoldo - RS","São Luís - MA","São Mateus - ES","São Paulo - Aclimação - SP","São Paulo - Aricanduva - SP","São Paulo - Barra Funda - SP","São Paulo - Brasilândia - SP","São Paulo - Capão Redondo - SP","São Paulo - Casa Verde - SP","São Paulo - Faria Lima - SP","São Paulo - Guaianases - SP","São Paulo - Interlagos - SP","São Paulo - Itaquera - SP","São Paulo - Jabaquara - SP","São Paulo - Lapa - SP","São Paulo - Mooca - SP","São Paulo - Morumbi - SP","São Paulo - Paulista - SP","São Paulo - Penha - SP","São Paulo - República - SP","São Paulo - Santana - SP","São Paulo - Santo Amaro - SP","São Paulo - São Mateus - SP","São Paulo - Sapopemba - SP","São Paulo - Saúde - SP","São Paulo - Tatuapé - SP","São Paulo - Tucuruvi - SP","São Paulo - Vila Carrão - SP","São Paulo - Vila Pirituba - SP","São Vicente - SP","Sapucaia do Sul - RS","Sarandi - PR","Senador Canedo - GO","Serra - ES","Sete Lagoas - MG","Sinop - MT","Sobral - CE","Sorocaba - SP","Sorriso - MT","Sumaré - SP","Suzano - SP","Taguatinga - DF","Taubaté - SP","Tatuí - SP","Taboão da Serra - SP","Telêmaco Borba - PR","Teresina - PI","Teresópolis - RJ","Teutônia - RS","Teixeira de Freitas - BA","Tijucas - SC","Timon - MA","Tocantinópolis - TO","Toledo - PR","Tramandaí - RS","Três Lagoas - MS","Três Rios - RJ","Tubarão - SC","Tupã - SP","Uberaba - MG","Uberlândia - MG","Umuarama - PR","União da Vitória - PR","Uruguaiana - RS","Valença - BA","Valinhos - SP","Valparaíso de Goiás - GO","Venâncio Aires - RS","Viamão - RS","Viçosa - MG","Videira - SC","Vila Velha - ES","Vilhena - RO","Vitória - ES","Vitória de Santo Antão - PE","Volta Redonda - RJ","Votuporanga - SP","Xanxerê - SC","Zé Doca - MA"];
 
 // ── Estado global ──
 let todosDados = [];
@@ -541,8 +535,6 @@ function fecharSenha() {
 function initForm() {
   const selC = document.getElementById('consultor');
   CONSULTORES.forEach(n => { const o = document.createElement('option'); o.value=n; o.textContent=n; selC.appendChild(o); });
-  const selP = document.getElementById('polo');
-  POLOS.forEach(p => { const o = document.createElement('option'); o.value=p; o.textContent=p; selP.appendChild(o); });
 }
 
 // ── Toast ──
@@ -555,7 +547,7 @@ function toast(msg, cor='#1E9E62') {
 
 // ── Formulário ──
 function limpar() {
-  ['consultor','candidato','dataPagamento','linkConversa','observacoes','polo'].forEach(id=>{
+  ['consultor','candidato','dataPagamento','linkConversa','observacoes'].forEach(id=>{
     document.getElementById(id).value='';
     document.getElementById(id).style.borderColor='';
     document.getElementById(id).style.boxShadow='';
@@ -570,7 +562,7 @@ function setLoading(on) {
 }
 
 async function registrar() {
-  const campos=['consultor','candidato','dataPagamento','linkConversa','polo','tipoCurso','gestor'];
+  const campos=['consultor','candidato','dataPagamento','linkConversa','tipoCurso','gestor'];
   let valido=true;
   campos.forEach(id=>{
     const el=document.getElementById(id);
@@ -585,7 +577,6 @@ async function registrar() {
     data:document.getElementById('dataPagamento').value,
     link:document.getElementById('linkConversa').value,
     obs:document.getElementById('observacoes').value,
-    polo:document.getElementById('polo').value,
     tipo_curso:document.getElementById('tipoCurso').value,
     gestor:document.getElementById('gestor').value,
   };
@@ -633,7 +624,7 @@ async function carregarDados() {
     }
 
     // Ignora linha de cabeçalho caso a API a inclua nas rows
-    const CABECALHOS = ['id','consultor','consultor(a)','nome','candidato','polo','data','registrado'];
+    const CABECALHOS = ['id','consultor','consultor(a)','nome','candidato','data','registrado'];
     todosDados=rows
       .filter(r => {
         const val = String(r.c[1]?.v ?? '').toLowerCase().trim();
@@ -646,7 +637,6 @@ async function carregarDados() {
         data:       parseGDate(r.c[3]?.v),
         link:       r.c[4]?.v ?? '',
         obs:        r.c[5]?.v ?? '',
-        polo:       r.c[6]?.v ?? '',
         reg_em:     parseGDate(r.c[7]?.v),
         tipo_curso: r.c[8]?.v ?? '',
         gestor:     r.c[9]?.v ?? '',
@@ -674,7 +664,6 @@ function atualizarKPIs(){
 
   document.getElementById('kTotal').textContent=filtrados.length;
   document.getElementById('kConsult').textContent=new Set(filtrados.map(d=>d.consultor).filter(Boolean)).size;
-  document.getElementById('kPolos').textContent=new Set(filtrados.map(d=>d.polo).filter(Boolean)).size;
 
   // Compara usando reg_em já convertido pelo parseGDate (formato dd/mm/yyyy hh:mm:ss)
   document.getElementById('kHoje').textContent=filtrados.filter(d=>{
@@ -856,7 +845,6 @@ function renderTabela(){
       <td>${d.consultor||'–'}</td>
       <td>${d.candidato||'–'}</td>
       <td>${fmtData(d.data)}</td>
-      <td>${d.polo||'–'}</td>
       <td>${d.tipo_curso||'–'}</td>
       <td>${d.gestor ? d.gestor.split(' ')[0]+' '+d.gestor.split(' ').slice(-1)[0] : '–'}</td>
       <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${d.obs||''}">${d.obs||'–'}</td>
@@ -884,7 +872,7 @@ function irPag(p){pagAtual=p;renderTabela();window.scrollTo(0,document.querySele
 
 function exportarExcel(){
   if(!todosDados.length){toast('Não há dados para exportar.','#C97A00');return;}
-  const rows=todosDados.map(d=>({'ID':d.id,'Consultor(a)':d.consultor,'Nº Candidato':d.candidato,'Data Pagamento':fmtData(d.data),'Polo':d.polo,'Tipo de Curso':d.tipo_curso||'','Gestor(a)':d.gestor||'','Observações':d.obs,'Link Conversa':d.link,'Registrado Em':d.reg_em}));
+  const rows=todosDados.map(d=>({'ID':d.id,'Consultor(a)':d.consultor,'Nº Candidato':d.candidato,'Data Pagamento':fmtData(d.data),'Tipo de Curso':d.tipo_curso||'','Gestor(a)':d.gestor||'','Observações':d.obs,'Link Conversa':d.link,'Registrado Em':d.reg_em}));
   const ws=XLSX.utils.json_to_sheet(rows);
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Matrículas');
