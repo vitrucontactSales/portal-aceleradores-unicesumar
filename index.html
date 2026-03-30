@@ -343,11 +343,11 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
     </div>
 
     <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px;align-items:start">
-      <!-- Consultores: barras horizontais -->
+      <!-- Gestores: barras horizontais -->
       <div class="chart-card">
-        <h3>📊 Matrículas por Consultor</h3>
-        <div id="cConsultorWrap" style="overflow-y:auto">
-          <canvas id="cConsultor"></canvas>
+        <h3>👤 Matrículas por Gestor</h3>
+        <div id="cGestorWrap" style="overflow-y:auto">
+          <canvas id="cGestor"></canvas>
         </div>
       </div>
       <!-- Tipo de curso: rosca -->
@@ -692,24 +692,24 @@ function renderCharts(){
   if(chartC)chartC.destroy();
   if(chartT)chartT.destroy();
 
-  // ── Consultores: barras horizontais, todos, ordenados ──
-  const consultData = contarCampo('consultor');
-  const nConsult = consultData.length;
-  const alturaConsult = Math.max(260, nConsult * 34);
-  const wrapC = document.getElementById('cConsultorWrap');
-  const canvC = document.getElementById('cConsultor');
-  canvC.style.height = alturaConsult + 'px';
-  wrapC.style.maxHeight = nConsult > 10 ? '460px' : 'none';
+  // ── Gestores: barras horizontais ──
+  const gestData = contarCampo('gestor');
+  const nGest = gestData.length;
+  const alturaGest = Math.max(160, nGest * 48);
+  const wrapG = document.getElementById('cGestorWrap');
+  const canvG = document.getElementById('cGestor');
+  canvG.style.height = alturaGest + 'px';
+  wrapG.style.maxHeight = 'none';
 
-  chartC = new Chart(canvC, {
+  chartC = new Chart(canvG, {
     type: 'bar',
     data: {
-      labels: consultData.map(([k]) => k),
+      labels: gestData.map(([k]) => k ? k.split(' ')[0]+' '+k.split(' ').slice(-1)[0] : 'N/A'),
       datasets: [{
-        data: consultData.map(([,v]) => v),
-        backgroundColor: '#1A4E8C',
+        data: gestData.map(([,v]) => v),
+        backgroundColor: ['#1A4E8C','#2466B0','#3B8DD4','#5BA4E4'],
         hoverBackgroundColor: '#3B8DD4',
-        borderRadius: 4,
+        borderRadius: 6,
       }]
     },
     options: {
@@ -719,7 +719,7 @@ function renderCharts(){
       plugins: { legend: { display: false } },
       scales: {
         x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#EDF2F7' } },
-        y: { ticks: { font: { size: 11 }, color: '#2D3748' }, grid: { display: false } }
+        y: { ticks: { font: { size: 12, weight: '600' }, color: '#1A4E8C' }, grid: { display: false } }
       }
     }
   });
