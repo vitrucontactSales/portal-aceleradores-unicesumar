@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aceleradores 52.2026 — UniCesumar</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --azul:#1A4E8C; --azul-m:#2466B0; --azul-c:#3B8DD4;
+  --bg:#E8F2FB; --borda:#D0DFF0; --cinza:#5B6474;
+  --cinza-cl:#F4F6FA; --vermelho:#D93B3B; --verde:#1E9E62;
+  --amber:#C97A00; --shadow:0 4px 24px rgba(26,78,140,.10); --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);min-height:100vh}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 60%,var(--azul-c) 100%);
+  padding:0 32px;display:flex;align-items:center;
+  justify-content:space-between;height:68px;
+  box-shadow:0 2px 12px rgba(26,78,140,.18);
+  position:sticky;top:0;z-index:100;
+}
+.logo-area{display:flex;align-items:center;gap:14px}
+.logo-svg{width:40px;height:40px}
+.h-title{font-family:'Nunito',sans-serif;color:#fff;font-size:1.12rem;font-weight:800;line-height:1.2}
+.h-sub{color:rgba(255,255,255,.75);font-size:.78rem;font-weight:600}
+.nav-tabs{display:flex;gap:6px}
+.nav-tab{
+  background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);
+  border:1.5px solid rgba(255,255,255,.2);border-radius:8px;
+  padding:7px 20px;font-family:'Nunito',sans-serif;font-weight:700;
+  font-size:.85rem;cursor:pointer;transition:all .2s;
+}
+.nav-tab:hover{background:rgba(255,255,255,.22);color:#fff}
+.nav-tab.active{background:#fff;color:var(--azul);border-color:#fff}
+
+/* ── PÁGINAS ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ══════════ FORMULÁRIO ══════════ */
+.form-wrap{max-width:680px;margin:36px auto;padding:0 16px 60px}
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.card-head{
+  background:linear-gradient(135deg,var(--azul),var(--azul-c));
+  padding:28px 32px;position:relative;overflow:hidden;
+}
+.card-head::before{
+  content:'';position:absolute;right:-30px;bottom:-30px;
+  width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.07);
+}
+.card-head h1{font-family:'Nunito',sans-serif;color:#fff;font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.card-head p{color:rgba(255,255,255,.78);font-size:.82rem}
+.req-note{padding:10px 32px;background:#FFF8E1;border-bottom:1px solid #FFE082;font-size:.78rem;color:#7B5800}
+.form-body{padding:28px 32px 24px;display:flex;flex-direction:column;gap:20px}
+.group{display:flex;flex-direction:column;gap:7px}
+.label{font-family:'Nunito',sans-serif;font-weight:700;font-size:.9rem;color:var(--azul);display:flex;align-items:center;gap:7px}
+.num{background:var(--azul);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0}
+.req{color:var(--vermelho);margin-left:2px}
+.sw{position:relative}
+.sw::after{content:'▾';position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--azul-c);pointer-events:none}
+.ctrl{
+  width:100%;padding:11px 14px;border:1.5px solid var(--borda);
+  border-radius:9px;font-family:'Nunito Sans',sans-serif;
+  font-size:.92rem;color:#2D3748;background:var(--cinza-cl);
+  transition:border-color .2s,box-shadow .2s;appearance:none;-webkit-appearance:none;
+}
+.ctrl:focus{outline:none;border-color:var(--azul-c);background:#fff;box-shadow:0 0 0 3px rgba(59,141,212,.15)}
+.ctrl::placeholder{color:#A0AEC0}
+textarea.ctrl{resize:vertical;min-height:90px}
+.foot{padding:0 32px 28px;display:flex;justify-content:flex-end;gap:12px}
+.btn{padding:11px 28px;border-radius:9px;font-family:'Nunito',sans-serif;font-weight:800;font-size:.92rem;cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;gap:8px}
+.btn-p{background:linear-gradient(135deg,var(--azul),var(--azul-c));color:#fff;box-shadow:0 3px 12px rgba(26,78,140,.25)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(26,78,140,.35)}
+.btn-p:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-s{background:var(--cinza-cl);color:var(--cinza);border:1.5px solid var(--borda)}
+.btn-s:hover{background:var(--borda)}
+.btn-s:disabled{opacity:.5;cursor:not-allowed}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;flex-shrink:0}
+
+/* Validação — mensagens de erro inline */
+.err-msg{display:none;color:var(--vermelho);font-size:.78rem;font-weight:700;margin-top:2px;align-items:center;gap:4px;line-height:1.3}
+.err-msg.show{display:flex}
+.ctrl.invalid{border-color:var(--vermelho);background:#FEF2F2}
+.ctrl.invalid:focus{border-color:var(--vermelho);box-shadow:0 0 0 3px rgba(217,59,59,.15);background:#fff}
+.help-txt{font-size:.74rem;color:var(--cinza);margin-top:2px;font-style:italic}
+
+/* ══════════ DASHBOARD ══════════ */
+.dash-wrap{max-width:1100px;margin:0 auto;padding:28px 16px 60px}
+.dash-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.dash-title{font-family:'Nunito',sans-serif;font-size:1.3rem;font-weight:800;color:var(--azul)}
+.dash-sub{font-size:.8rem;color:var(--cinza);margin-top:3px}
+.dash-actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn-excel{background:linear-gradient(135deg,#1E6E3F,#28A745);color:#fff;box-shadow:0 3px 12px rgba(30,110,63,.25);padding:10px 20px;font-size:.85rem}
+.btn-excel:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(30,110,63,.35)}
+.btn-refresh{background:#fff;color:var(--azul);border:1.5px solid var(--azul);padding:10px 20px;font-size:.85rem}
+.btn-refresh:hover{background:var(--bg)}
+
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:24px}
+.kpi{background:#fff;border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow);border-top:4px solid var(--azul-c)}
+.kpi.green{border-top-color:var(--verde)}
+.kpi.amber{border-top-color:#F5A623}
+.kpi-lbl{font-size:.75rem;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:.04em}
+.kpi-val{font-family:'Nunito',sans-serif;font-size:2rem;font-weight:800;color:var(--azul);line-height:1.1;margin-top:4px}
+.kpi.green .kpi-val{color:var(--verde)}
+.kpi.amber .kpi-val{color:var(--amber)}
+
+/* Charts */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr}}
+.chart-card{background:#fff;border-radius:var(--r);padding:22px;box-shadow:var(--shadow)}
+.chart-card h3{font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;color:var(--azul);margin-bottom:14px}
+.chart-card canvas{max-height:230px}
+
+/* Tabela */
+.table-card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.table-hd{padding:16px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid var(--borda);flex-wrap:wrap;gap:10px}
+.table-hd h3{font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;color:var(--azul)}
+.search{padding:8px 13px;border:1.5px solid var(--borda);border-radius:8px;font-family:'Nunito Sans',sans-serif;font-size:.85rem;width:230px;background:var(--cinza-cl)}
+.search:focus{outline:none;border-color:var(--azul-c)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+thead th{background:var(--azul);color:#fff;padding:11px 14px;text-align:left;font-family:'Nunito',sans-serif;font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+tbody tr{border-bottom:1px solid #EDF2F7;transition:background .15s}
+tbody tr:hover{background:var(--bg)}
+tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
+.link-a{color:var(--azul-c);text-decoration:none;font-weight:700}
+.link-a:hover{text-decoration:underline}
+.pag{padding:12px 22px;display:flex;align-items:center;gap:8px;justify-content:flex-end;border-top:1.5px solid var(--borda);font-size:.82rem;color:var(--cinza)}
+
+/* Filtros período */
+.filtros-bar{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:16px 22px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.filtros-bar label{font-size:.82rem;font-weight:700;color:var(--cinza);white-space:nowrap}
+.filtros-bar input[type=date]{padding:8px 12px;border:1.5px solid var(--borda);border-radius:8px;font-family:'Nunito Sans',sans-serif;font-size:.85rem;color:#2D3748;background:var(--cinza-cl)}
+.filtros-bar input[type=date]:focus{outline:none;border-color:var(--azul-c)}
+.filtros-bar select{padding:8px 12px;border:1.5px solid var(--borda);border-radius:8px;font-family:'Nunito Sans',sans-serif;font-size:.85rem;color:#2D3748;background:var(--cinza-cl);appearance:none;min-width:160px}
+.btn-filtrar{background:var(--azul);color:#fff;padding:8px 18px;font-size:.83rem}
+.btn-filtrar:hover{background:var(--azul-m)}
+.btn-limpar-filtro{background:var(--cinza-cl);color:var(--cinza);border:1.5px solid var(--borda);padding:8px 14px;font-size:.83rem}
+.btn-limpar-filtro:hover{background:var(--borda)}
+.btn-print{background:#fff;color:var(--azul);border:1.5px solid var(--azul);padding:10px 20px;font-size:.85rem}
+.btn-print:hover{background:var(--bg)}
+
+/* Tabela ranking consultores */
+.ranking-card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:24px}
+.ranking-card h3{font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;color:var(--azul);padding:18px 22px 0}
+.ranking-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.ranking-table thead th{background:var(--azul);color:#fff;padding:10px 16px;text-align:left;font-family:'Nunito',sans-serif;font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+.ranking-table thead th:last-child{text-align:center}
+.ranking-table tbody tr{border-bottom:1px solid #EDF2F7;transition:background .15s}
+.ranking-table tbody tr:hover{background:var(--bg)}
+.ranking-table tbody td{padding:10px 16px;color:#2D3748;vertical-align:middle}
+.ranking-table tbody td:first-child{font-weight:700;color:var(--cinza);width:40px}
+.ranking-table tbody td:nth-child(3){text-align:center}
+.qtd-badge{display:inline-block;background:var(--azul);color:#fff;border-radius:20px;padding:2px 14px;font-family:'Nunito',sans-serif;font-weight:800;font-size:.85rem}
+.bar-wrap{height:8px;background:#EDF2F7;border-radius:4px;min-width:80px}
+.bar-fill{height:8px;background:linear-gradient(90deg,var(--azul),var(--azul-c));border-radius:4px;transition:width .4s}
+
+/* Print */
+@media print{
+  header,.nav-tabs,.dash-actions,.filtros-bar .btn-filtrar,.filtros-bar .btn-limpar-filtro,.btn-print,.btn-excel,.btn-refresh,.pag,#busca{display:none!important}
+  body{background:#fff}
+  .dash-wrap{padding:8px}
+  .kpi-grid{grid-template-columns:repeat(4,1fr)}
+  .ranking-card,.table-card,.kpi{box-shadow:none;border:1px solid #ddd}
+  .charts-grid{display:none}
+  .page{display:block!important}
+}
+.pb{background:var(--cinza-cl);border:1px solid var(--borda);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--azul)}
+.pb:hover{background:var(--bg)}
+.pb.active{background:var(--azul);color:#fff;border-color:var(--azul)}
+
+/* Loading / empty */
+.loading-state,.empty-state{text-align:center;padding:52px 20px;color:var(--cinza)}
+.loading-state .spin-big{width:36px;height:36px;border:3px solid var(--borda);border-top-color:var(--azul-c);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+.empty-state p{font-family:'Nunito',sans-serif;font-weight:700;font-size:.95rem;margin-top:8px}
+.empty-state small{font-size:.82rem}
+
+/* Toast */
+/* Modal senha */
+.senha-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:500;display:flex;align-items:center;justify-content:center;
+}
+.senha-modal{
+  background:#fff;border-radius:var(--r);padding:32px;
+  width:100%;max-width:380px;box-shadow:0 16px 48px rgba(0,0,0,.2);
+  text-align:center;
+}
+.senha-modal h2{
+  font-family:'Nunito',sans-serif;font-weight:800;
+  font-size:1.15rem;color:var(--azul);margin-bottom:6px;
+}
+.senha-modal p{font-size:.85rem;color:var(--cinza);margin-bottom:20px}
+.senha-input{
+  width:100%;padding:12px 16px;border:1.5px solid var(--borda);
+  border-radius:9px;font-family:'Nunito Sans',sans-serif;
+  font-size:1rem;color:#2D3748;background:var(--cinza-cl);
+  text-align:center;letter-spacing:.15em;margin-bottom:12px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.senha-input:focus{outline:none;border-color:var(--azul-c);box-shadow:0 0 0 3px rgba(59,141,212,.15)}
+.senha-erro{font-size:.82rem;color:var(--vermelho);margin-bottom:12px;display:none}
+.senha-btns{display:flex;gap:10px;justify-content:center}
+
+.toast{position:fixed;bottom:28px;right:28px;padding:14px 22px;border-radius:10px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.92rem;box-shadow:0 6px 24px rgba(0,0,0,.15);display:flex;align-items:center;gap:10px;color:#fff;transform:translateY(100px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:999}
+.toast.show{transform:translateY(0);opacity:1}
+
+@media(max-width:600px){
+  .form-body,.foot{padding-left:20px;padding-right:20px}
+  .card-head{padding:22px 20px}
+  header{padding:0 16px}
+  .nav-tab{padding:7px 12px;font-size:.78rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <svg class="logo-svg" viewBox="0 0 42 42" fill="none">
+      <path d="M8 8 Q8 34 21 34 Q34 34 34 8" stroke="white" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <circle cx="21" cy="14" r="5.5" fill="#60B8F0"/>
+      <path d="M13.5 14 Q13.5 22 21 22 Q28.5 22 28.5 14" stroke="rgba(255,255,255,.55)" stroke-width="3" fill="none"/>
+    </svg>
+    <div>
+      <div class="h-title">UniCesumar</div>
+      <div class="h-sub">Contacte Sales · Aceleradores 52.2026</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('form-page',this)">📋 Formulário</button>
+    <button class="nav-tab" onclick="showPage('dash-page',this)">📊 Dashboard</button>
+  </div>
+</header>
+
+<!-- ══════════ FORMULÁRIO ══════════ -->
+<div id="form-page" class="page active">
+  <div class="form-wrap">
+    <div class="card">
+      <div class="card-head">
+        <h1>Aceleradores — 52.2026</h1>
+        <p>Registro de matrículas · Consultores Contacte Sales</p>
+      </div>
+      <div class="req-note">⚠ Todos os campos marcados com <strong> * </strong> são obrigatórios.</div>
+      <div class="form-body">
+        <div class="group">
+          <label class="label"><span class="num">1</span> Nome do(a) Consultor(a) <span class="req">*</span></label>
+          <div class="sw"><select class="ctrl" id="consultor" required><option value="">Selecione o(a) Consultor(a)</option></select></div>
+          <div class="err-msg" id="err_consultor"></div>
+        </div>
+        <div class="group">
+          <label class="label"><span class="num">2</span> Número de Candidato <span class="req">*</span></label>
+          <input class="ctrl" type="text" id="candidato"
+                 placeholder="Ex.: 20265237839"
+                 inputmode="numeric"
+                 autocomplete="off"
+                 maxlength="15"
+                 required>
+          <div class="help-txt">Apenas números, sem pontos ou traços. Deve começar com <strong>2026</strong>.</div>
+          <div class="err-msg" id="err_candidato"></div>
+        </div>
+        <div class="group">
+          <label class="label"><span class="num">3</span> Data do Pagamento <span class="req">*</span></label>
+          <input class="ctrl" type="date" id="dataPagamento" required>
+          <div class="err-msg" id="err_dataPagamento"></div>
+        </div>
+        <div class="group">
+          <label class="label"><span class="num">4</span> Link da Conversa <span class="req">*</span></label>
+          <input class="ctrl" type="url" id="linkConversa" placeholder="https://" required>
+          <div class="err-msg" id="err_linkConversa"></div>
+        </div>
+        <div class="group">
+          <label class="label"><span class="num">5</span> Observações</label>
+          <textarea class="ctrl" id="observacoes" placeholder="Observações relevantes sobre a matrícula..."></textarea>
+        </div>
+        <div class="group">
+          <label class="label"><span class="num">6</span> Tipo de Curso <span class="req">*</span></label>
+          <div class="sw">
+            <select class="ctrl" id="tipoCurso" required>
+              <option value="">Selecione o Tipo de Curso</option>
+              <option value="Graduação">Graduação</option>
+              <option value="Ed. Continuada">Ed. Continuada</option>
+            </select>
+          </div>
+          <div class="err-msg" id="err_tipoCurso"></div>
+        </div>
+        <div class="group">
+          <label class="label"><span class="num">7</span> Gestor(a) <span class="req">*</span></label>
+          <div class="sw">
+            <select class="ctrl" id="gestor" required>
+              <option value="">Selecione o(a) Gestor(a)</option>
+              <option value="Claudenice Maria Sales Ribeiro Barros">Claudenice Maria Sales Ribeiro Barros</option>
+              <option value="Clayton Eugenio Ramos dos Santos">Clayton Eugenio Ramos dos Santos</option>
+              <option value="Jhonatan Erik Ribeiro Dias">Jhonatan Erik Ribeiro Dias</option>
+              <option value="Rafael Marcos Pereira">Rafael Marcos Pereira</option>
+            </select>
+          </div>
+          <div class="err-msg" id="err_gestor"></div>
+        </div>
+      </div>
+      <div class="foot">
+        <button class="btn btn-s" onclick="limpar()" id="btnLimpar">Limpar</button>
+        <button class="btn btn-p" onclick="registrar()" id="btnEnviar">
+          <div class="spinner" id="spinner"></div>
+          <span id="btnTexto">✔ Registrar Matrícula</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="dash-page" class="page">
+  <div class="dash-wrap">
+    <div class="dash-top">
+      <div>
+        <div class="dash-title">📊 Painel de Matrículas</div>
+        <div class="dash-sub" id="dashSub">Carregando dados...</div>
+      </div>
+      <div class="dash-actions">
+        <button class="btn btn-refresh" onclick="carregarDados()">🔄 Atualizar</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir</button>
+        <button class="btn btn-excel" onclick="exportarExcel()">📥 Exportar Excel</button>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-bar">
+      <label>Período:</label>
+      <input type="date" id="filtroInicio" onchange="aplicarFiltros()">
+      <span style="color:var(--cinza);font-size:.82rem">até</span>
+      <input type="date" id="filtroFim" onchange="aplicarFiltros()">
+      <label>Gestor(a):</label>
+      <select id="filtroGestor" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+        <option>Claudenice Maria Sales Ribeiro Barros</option>
+        <option>Clayton Eugenio Ramos dos Santos</option>
+        <option>Jhonatan Erik Ribeiro Dias</option>
+        <option>Rafael Marcos Pereira</option>
+      </select>
+      <label>Tipo:</label>
+      <select id="filtroTipo" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+        <option>Graduação</option>
+        <option>Ed. Continuada</option>
+      </select>
+      <button class="btn btn-limpar-filtro" onclick="limparFiltros()">✕ Limpar</button>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-lbl">Total de Registros</div><div class="kpi-val" id="kTotal">–</div></div>
+      <div class="kpi green"><div class="kpi-lbl">Consultores Ativos</div><div class="kpi-val" id="kConsult">–</div></div></div>
+      <div class="kpi"><div class="kpi-lbl">Registros Hoje</div><div class="kpi-val" id="kHoje">–</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px;align-items:start">
+      <!-- Gestores: barras horizontais -->
+      <div class="chart-card">
+        <h3>👤 Matrículas por Gestor</h3>
+        <div id="cGestorWrap" style="overflow-y:auto">
+          <canvas id="cGestor"></canvas>
+        </div>
+      </div>
+      <!-- Tipo de curso: rosca -->
+      <div class="chart-card">
+        <h3>🎓 Tipo de Curso</h3>
+        <canvas id="cTipo" style="max-height:280px"></canvas>
+      </div>
+    </div>
+
+    <!-- Ranking completo consultores -->
+    <div class="ranking-card">
+      <h3>🏆 Ranking de Consultores</h3>
+      <div style="overflow-x:auto">
+        <table class="ranking-table">
+          <thead><tr><th>#</th><th>Consultor(a)</th><th>Qtd</th><th style="min-width:120px">Aceleradores</th></tr></thead>
+          <tbody id="tbodyRanking"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-hd">
+        <h3>📋 Registros Detalhados</h3>
+        <input class="search" type="text" id="busca" placeholder="🔍 Buscar..." oninput="filtrar()">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Consultor(a)</th><th>Nº Candidato</th>
+              <th>Data Pgto.</th><th>Tipo</th>
+              <th>Gestor(a)</th><th>Observações</th>
+              <th>Link</th><th>Registrado Em</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="pag" id="pag"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal senha dashboard -->
+<div class="senha-overlay" id="senhaOverlay" style="display:none">
+  <div class="senha-modal">
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" style="margin:0 auto 12px">
+      <circle cx="22" cy="22" r="22" fill="#E8F2FB"/>
+      <path d="M16 20v-4a6 6 0 0 1 12 0v4" stroke="#1A4E8C" stroke-width="2" stroke-linecap="round"/>
+      <rect x="13" y="20" width="18" height="13" rx="3" fill="#1A4E8C"/>
+      <circle cx="22" cy="27" r="2" fill="#fff"/>
+    </svg>
+    <h2>Área Restrita</h2>
+    <p>O Dashboard é exclusivo para gestores.<br>Digite a senha para continuar.</p>
+    <input class="senha-input" type="password" id="senhaInput"
+      placeholder="••••••••" maxlength="30"
+      onkeydown="if(event.key==='Enter')verificarSenha()">
+    <div class="senha-erro" id="senhaErro">Senha incorreta. Tente novamente.</div>
+    <div class="senha-btns">
+      <button class="btn btn-s" onclick="fecharSenha()" style="padding:10px 20px;font-size:.85rem">Cancelar</button>
+      <button class="btn btn-p" onclick="verificarSenha()" style="padding:10px 24px;font-size:.85rem">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ================================================================
+//  ⚙️  CONFIGURAÇÕES — edite apenas estas duas linhas
+// ================================================================
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwQf_QC9_-AcjaEBj-aMOUvUfmYDMDpBviCxaNF270UkLKbd3TiWbcECvSnkTx82u4Lg/exec";
+const SHEET_ID          = "1t0SBAPeGpHr8ZocEeD5akQ1xe80WEnqzGch3jeQmkqI";
+
+// ── Regras de validação do Nº Candidato ──
+const CANDIDATO_PREFIXO = "2026";   // número do candidato deve começar com isso
+const CANDIDATO_MIN_LEN = 10;       // tamanho mínimo (dígitos)
+const CANDIDATO_MAX_LEN = 15;       // tamanho máximo (dígitos)
+
+// ── Regras de validação da Data do Pagamento ──
+// Altere DATA_PAGTO_MIN para o início do período aceito.
+const DATA_PAGTO_MIN    = "2026-01-01";   // não aceita datas anteriores a esta
+// Data máxima = sempre hoje (não permite datas futuras)
+// ================================================================
+// Como obter o SHEET_ID:
+// Abra sua planilha Google. A URL será algo como:
+// https://docs.google.com/spreadsheets/d/XXXXXXXXXXXXXXX/edit
+// O SHEET_ID é a parte XXXXXXXXXXXXXXX entre /d/ e /edit
+// ================================================================
+
+const CONSULTORES = [
+  "Ana Karoline Cristo Ribeiro",
+  "Andreia Ferreira De Oliveira",
+  "Beatriz De Oliveira Xavier",
+  "Beatriz Moreira De Maria",
+  "Beatriz Shiki Portilho",
+  "Caroline Silva Santos",
+  "Celia De Souza Lima",
+  "Edenilson Teodoro Junior",
+  "Elaine Kubitz",
+  "Emily Emanuelly de Souza",
+  "Erick Alexsander Do Santos",
+  "Evelin Cristini Da Silva",
+  "Fernanda Magioto",
+  "Gabriel Candido Silva",
+  "Gessica Da Cruz Barturi Luciano",
+  "Giovana Rossi",
+  "Giovanna Cadide Cabral",
+  "Gislaine Angélica Rodrigues Silva",
+  "Gustavo Qualho Cazoni",
+  "Helen Almeida Maffioletti",
+  "Henrique Caua Cupertino Navarro",
+  "Ingrid Kawane Ribeiro Moreira",
+  "Isabela Cristina Melo Agostini",
+  "Joselma Oliveira Jardim",
+  "Joyce Andressa Da Silva Valentino",
+  "Julia Caroline Da Silva Pessoa",
+  "Julie Ndinga Zeferino Da Silva",
+  "Leandra Santos Lorenzetti",
+  "Leonardo Neves Dos Santos",
+  "Leonardo Salvalagio Gibin",
+  "Lucas Brito Medeiros da Silva",
+  "Malu Amaral Kanda",
+  "Luciana Simili Crecencio",
+  "Marcos Vinícius Ferreira Fontes",
+  "Mariane Oliveira Dias",
+  "Neide Dagues Costa",
+  "Pedro Henrique Ribeiro Dos Santos",
+  "Sabrina Manoela Dos Santos Lima",
+  "Sabrina Soares Santos Guido",
+  "Sander Miguel Figueroa",
+  "Sandra Regina Braziel",
+  "Sarah Da Silva Purnucena",
+  "Sthefanny Dayanne Da Silva Roberto",
+  "Talita Araujo Dos Santos",
+  "Tauany Bezerra De Souza",
+  "Thayssa Victoria Da Silva Pereira",
+  "Vanusa Silvino",
+  "Victor Kendy Kozina",
+  "Willyan Gabriel Lopes Moreira De Almeida",
+  "Yara Caleffi Costa",
+  // ── Adicione novos consultores aqui, um por linha ──
+];
+
+
+// ── Estado global ──
+let todosDados = [];
+let filtrados  = [];
+let pagAtual   = 1;
+const POR_PAG  = 20;
+let chartC = null, chartT = null;
+
+// ── Navegação ──
+// Senha do dashboard — altere aqui para trocar
+const SENHA_DASH = "Aceleradores@2026";
+let dashLiberado = false;
+let _btnPendente = null;
+
+function showPage(id, btn) {
+  if (id === 'dash-page' && !dashLiberado) {
+    _btnPendente = btn;
+    document.getElementById('senhaInput').value = '';
+    document.getElementById('senhaErro').style.display = 'none';
+    document.getElementById('senhaOverlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('senhaInput').focus(), 100);
+    return;
+  }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  if (id === 'dash-page' && todosDados.length === 0) carregarDados();
+}
+
+function verificarSenha() {
+  const val = document.getElementById('senhaInput').value;
+  if (val === SENHA_DASH) {
+    dashLiberado = true;
+    document.getElementById('senhaOverlay').style.display = 'none';
+    showPage('dash-page', _btnPendente);
+  } else {
+    const erro = document.getElementById('senhaErro');
+    erro.style.display = 'block';
+    document.getElementById('senhaInput').value = '';
+    document.getElementById('senhaInput').focus();
+    setTimeout(() => erro.style.display = 'none', 3000);
+  }
+}
+
+function fecharSenha() {
+  document.getElementById('senhaOverlay').style.display = 'none';
+}
+
+// ── Init formulário ──
+function initForm() {
+  const selC = document.getElementById('consultor');
+  CONSULTORES.forEach(n => { const o = document.createElement('option'); o.value=n; o.textContent=n; selC.appendChild(o); });
+
+  // ── Campo Nº Candidato: filtrar qualquer caractere não-dígito em tempo real ──
+  const candEl = document.getElementById('candidato');
+  candEl.addEventListener('input', e => {
+    const limpo = e.target.value.replace(/\D/g, '');
+    if (limpo !== e.target.value) e.target.value = limpo;
+    limparErroCampo('candidato');
+  });
+  // Bloqueia tecla de espaço / traço / ponto no candidato
+  candEl.addEventListener('keydown', e => {
+    if (['-','.',',',' ','+','e','E'].includes(e.key)) e.preventDefault();
+  });
+  // Ao colar, limpa tudo que não é dígito
+  candEl.addEventListener('paste', e => {
+    e.preventDefault();
+    const txt = (e.clipboardData || window.clipboardData).getData('text');
+    const soDigitos = (txt || '').replace(/\D/g, '').slice(0, CANDIDATO_MAX_LEN);
+    candEl.value = soDigitos;
+    limparErroCampo('candidato');
+  });
+
+  // ── Campo Data: define min e max (hoje) no próprio input ──
+  const hojeStr = (new Date()).toISOString().slice(0,10);
+  const dataEl  = document.getElementById('dataPagamento');
+  dataEl.min    = DATA_PAGTO_MIN;
+  dataEl.max    = hojeStr;
+
+  // Limpar erro ao editar qualquer campo
+  ['consultor','dataPagamento','linkConversa','tipoCurso','gestor'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input',  () => limparErroCampo(id));
+    if (el) el.addEventListener('change', () => limparErroCampo(id));
+  });
+}
+
+// ── Helpers de validação/erros visuais ──
+function mostrarErro(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('invalid');
+  const err = document.getElementById('err_' + id);
+  if (err) { err.textContent = '⚠ ' + msg; err.classList.add('show'); }
+}
+function limparErroCampo(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('invalid');
+  const err = document.getElementById('err_' + id);
+  if (err) { err.textContent = ''; err.classList.remove('show'); }
+}
+function limparTodosErros() {
+  ['consultor','candidato','dataPagamento','linkConversa','tipoCurso','gestor']
+    .forEach(limparErroCampo);
+}
+function fmtDataBR(d) {
+  return String(d.getDate()).padStart(2,'0') + '/' +
+         String(d.getMonth()+1).padStart(2,'0') + '/' +
+         d.getFullYear();
+}
+
+function validarFormulario() {
+  limparTodosErros();
+  let ok = true;
+  let primeiroErro = null;
+  const marcar = (id, msg) => {
+    mostrarErro(id, msg);
+    if (!primeiroErro) primeiroErro = id;
+    ok = false;
+  };
+
+  // 1. Consultor
+  if (!document.getElementById('consultor').value.trim()) {
+    marcar('consultor', 'Selecione o(a) consultor(a).');
+  }
+
+  // 2. Nº Candidato
+  const cand = document.getElementById('candidato').value.trim();
+  if (!cand) {
+    marcar('candidato', 'Informe o número do candidato.');
+  } else if (!/^\d+$/.test(cand)) {
+    marcar('candidato', 'O número do candidato deve conter apenas dígitos (sem pontos, traços ou espaços).');
+  } else if (!cand.startsWith(CANDIDATO_PREFIXO)) {
+    marcar('candidato', `O número do candidato deve começar com "${CANDIDATO_PREFIXO}".`);
+  } else if (cand.length < CANDIDATO_MIN_LEN) {
+    marcar('candidato', `O número do candidato deve ter no mínimo ${CANDIDATO_MIN_LEN} dígitos.`);
+  } else if (cand.length > CANDIDATO_MAX_LEN) {
+    marcar('candidato', `O número do candidato deve ter no máximo ${CANDIDATO_MAX_LEN} dígitos.`);
+  }
+
+  // 3. Data do Pagamento
+  const dataStr = document.getElementById('dataPagamento').value;
+  if (!dataStr) {
+    marcar('dataPagamento', 'Informe a data do pagamento.');
+  } else {
+    const dt   = new Date(dataStr + 'T12:00:00');
+    const min  = new Date(DATA_PAGTO_MIN + 'T00:00:00');
+    const hoje = new Date(); hoje.setHours(23,59,59,999);
+    if (isNaN(dt.getTime())) {
+      marcar('dataPagamento', 'Data inválida.');
+    } else if (dt < min) {
+      marcar('dataPagamento', `A data deve ser igual ou posterior a ${fmtDataBR(min)}. Verifique se não digitou a data de nascimento por engano.`);
+    } else if (dt > hoje) {
+      marcar('dataPagamento', 'A data do pagamento não pode ser futura.');
+    }
+  }
+
+  // 4. Link da Conversa
+  const link = document.getElementById('linkConversa').value.trim();
+  if (!link) {
+    marcar('linkConversa', 'Informe o link da conversa.');
+  } else if (!/^https?:\/\/.+/i.test(link)) {
+    marcar('linkConversa', 'O link deve começar com http:// ou https://');
+  }
+
+  // 6. Tipo de Curso
+  if (!document.getElementById('tipoCurso').value) {
+    marcar('tipoCurso', 'Selecione o tipo de curso.');
+  }
+
+  // 7. Gestor
+  if (!document.getElementById('gestor').value) {
+    marcar('gestor', 'Selecione o(a) gestor(a).');
+  }
+
+  // Rola suavemente até o primeiro campo com erro
+  if (primeiroErro) {
+    const alvo = document.getElementById(primeiroErro);
+    if (alvo && alvo.scrollIntoView) {
+      alvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => { try { alvo.focus({ preventScroll: true }); } catch(e){} }, 250);
+    }
+  }
+  return ok;
+}
+
+// ── Toast ──
+function toast(msg, cor='#1E9E62') {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.style.background=cor;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+// ── Formulário ──
+function limpar() {
+  ['consultor','candidato','dataPagamento','linkConversa','observacoes','tipoCurso','gestor'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value='';
+    el.style.borderColor='';
+    el.style.boxShadow='';
+  });
+  limparTodosErros();
+}
+
+function setLoading(on) {
+  document.getElementById('btnEnviar').disabled=on;
+  document.getElementById('btnLimpar').disabled=on;
+  document.getElementById('spinner').style.display=on?'block':'none';
+  document.getElementById('btnTexto').textContent=on?'Enviando...':'✔ Registrar Matrícula';
+}
+
+async function registrar() {
+  // Validação completa — se qualquer campo estiver inválido, interrompe o envio
+  if (!validarFormulario()) {
+    toast('⚠ Corrija os campos destacados antes de registrar.','#C97A00');
+    return;
+  }
+
+  const payload={
+    consultor:document.getElementById('consultor').value.trim(),
+    candidato:document.getElementById('candidato').value.trim(),
+    data:document.getElementById('dataPagamento').value,
+    link:document.getElementById('linkConversa').value.trim(),
+    obs:document.getElementById('observacoes').value.trim(),
+    tipo_curso:document.getElementById('tipoCurso').value,
+    gestor:document.getElementById('gestor').value,
+  };
+
+  setLoading(true);
+  try {
+    await fetch(GOOGLE_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    limpar();
+    toast('✔ Matrícula registrada com sucesso!');
+    todosDados=[];// força reload no dashboard
+  } catch(err){
+    toast('❌ Erro ao enviar. Verifique sua conexão.','#D93B3B');
+  } finally{setLoading(false);}
+}
+
+// ── Dashboard: carregar dados ──
+async function carregarDados() {
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML=`<tr><td colspan="10"><div class="loading-state"><div class="spin-big"></div><p>Carregando dados da planilha...</p></div></td></tr>`;
+  document.getElementById('dashSub').textContent='Carregando...';
+
+  try {
+    // Lê a planilha como CSV público (a planilha precisa estar pública para leitura)
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=1427452575&headers=1`;
+    const res=await fetch(url);
+    const text=await res.text();
+    // Remove o wrapper google.visualization.Query.setResponse(...)
+    const json=JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+
+    const rows=json.table.rows;
+
+    // Converte datas no formato Date(yyyy,m,d) ou Date(yyyy,m,d,h,min,s) para string legível
+    function parseGDate(v) {
+      if (!v) return '';
+      const s = String(v);
+      const m = s.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);
+      if (m) {
+        const [,y,mo,d,h,mi,se]=m;
+        const dd = String(+d).padStart(2,'0');
+        const mm = String(+mo+1).padStart(2,'0'); // mês é 0-based na API do Google
+        const yyyy = y;
+        if (h !== undefined) {
+          const hh = String(+h).padStart(2,'0');
+          const min = String(+mi).padStart(2,'0');
+          const ss = String(+(se||0)).padStart(2,'0');
+          return `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+        }
+        return `${dd}/${mm}/${yyyy}`;
+      }
+      return s;
+    }
+
+    // Com headers=1 a API já exclui o cabeçalho das rows; filtra apenas linhas sem consultor
+    todosDados=rows
+      .filter(r => r.c && r.c[1]?.v)
+      .map((r,i)=>({
+        id:         r.c[0]?.v ?? i+1,
+        consultor:  r.c[1]?.v ?? '',
+        candidato:  String(r.c[2]?.v ?? ''),
+        data:       parseGDate(r.c[3]?.v),
+        link:       r.c[4]?.v ?? '',
+        obs:        r.c[5]?.v ?? '',
+        reg_em:     parseGDate(r.c[7]?.v),
+        tipo_curso: r.c[8]?.v ?? '',
+        gestor:     r.c[9]?.v ?? '',
+      }));
+
+    const agora=new Date().toLocaleString('pt-BR');
+    document.getElementById('dashSub').textContent=`Atualizado em: ${agora} · ${todosDados.length} registro(s)`;
+    filtrados=[...todosDados];
+    atualizarKPIs();
+    renderRanking();
+    renderCharts();
+    pagAtual=1;
+    renderTabela();
+  } catch(err){
+    tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state"><p>⚠ Não foi possível carregar os dados.</p><small>Verifique se a planilha está pública e o SHEET_ID está correto.</small></div></td></tr>`;
+    document.getElementById('dashSub').textContent='Erro ao carregar dados.';
+    console.error(err);
+  }
+}
+
+function atualizarKPIs(){
+  const agora = new Date();
+  const hojeDD  = String(agora.getDate()).padStart(2,'0');
+  const hogeMM  = String(agora.getMonth()+1).padStart(2,'0');
+  const hojeYYYY = String(agora.getFullYear());
+  // formato esperado de reg_em: "dd/mm/yyyy hh:mm:ss" ou "dd/mm/yyyy"
+  const hojePrefix = `${hojeDD}/${hogeMM}/${hojeYYYY}`;
+
+  document.getElementById('kTotal').textContent=filtrados.length;
+  document.getElementById('kConsult').textContent=new Set(filtrados.map(d=>d.consultor).filter(Boolean)).size;
+
+  document.getElementById('kHoje').textContent=filtrados.filter(d=>{
+    if(!d.reg_em) return false;
+    return d.reg_em.startsWith(hojePrefix);
+  }).length;
+}
+
+function top10(campo){
+  const cnt={};
+  todosDados.forEach(d=>{if(d[campo])cnt[d[campo]]=(cnt[d[campo]]||0)+1;});
+  return Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,10);
+}
+
+function contarCampo(campo, dados){
+  const cnt={};
+  (dados||filtrados).forEach(d=>{if(d[campo])cnt[d[campo]]=(cnt[d[campo]]||0)+1;});
+  return Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+}
+
+function renderCharts(){
+  if(chartC)chartC.destroy();
+  if(chartT)chartT.destroy();
+
+  // ── Gestores: barras horizontais ──
+  const gestData = contarCampo('gestor');
+  const nGest = gestData.length;
+  const alturaGest = Math.max(160, nGest * 48);
+  const wrapG = document.getElementById('cGestorWrap');
+  const canvG = document.getElementById('cGestor');
+  canvG.style.height = alturaGest + 'px';
+  wrapG.style.maxHeight = 'none';
+
+  chartC = new Chart(canvG, {
+    type: 'bar',
+    data: {
+      labels: gestData.map(([k]) => k ? k.split(' ')[0]+' '+k.split(' ').slice(-1)[0] : 'N/A'),
+      datasets: [{
+        data: gestData.map(([,v]) => v),
+        backgroundColor: ['#1A4E8C','#2466B0','#3B8DD4','#5BA4E4'],
+        hoverBackgroundColor: '#3B8DD4',
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#EDF2F7' } },
+        y: { ticks: { font: { size: 12, weight: '600' }, color: '#1A4E8C' }, grid: { display: false } }
+      }
+    }
+  });
+
+  // ── Tipo de curso: rosca com percentual ──
+  const tipoData = contarCampo('tipo_curso');
+  const totalTipo = tipoData.reduce((s,[,v])=>s+v,0);
+  chartT = new Chart(document.getElementById('cTipo'), {
+    type: 'doughnut',
+    data: {
+      labels: tipoData.map(([k,v]) => `${k||'Não informado'} (${Math.round(v/totalTipo*100)}%)`),
+      datasets: [{
+        data: tipoData.map(([,v]) => v),
+        backgroundColor: ['#1A4E8C','#3B8DD4','#7EC0F0'],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 14 } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const val = ctx.parsed;
+              const pct = Math.round(val/totalTipo*100);
+              return ` ${val} matrículas (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function parseDateBR(str){
+  if(!str)return null;
+  // formato dd/mm/yyyy ou yyyy-mm-dd
+  if(str.includes('/')){const[d,m,y]=str.split('/');return new Date(+y,+m-1,+d);}
+  if(str.includes('-')){const[y,m,d]=str.split('-');return new Date(+y,+m-1,+d);}
+  return null;
+}
+
+function aplicarFiltros(){
+  const q=(document.getElementById('busca').value||'').toLowerCase();
+  const ini=document.getElementById('filtroInicio').value;
+  const fim=document.getElementById('filtroFim').value;
+  const gest=(document.getElementById('filtroGestor').value||'').toLowerCase();
+  const tipo=(document.getElementById('filtroTipo').value||'').toLowerCase();
+
+  filtrados=todosDados.filter(d=>{
+    // busca texto
+    if(q && !Object.values(d).some(v=>String(v||'').toLowerCase().includes(q)))return false;
+    // gestor
+    if(gest && !String(d.gestor||'').toLowerCase().includes(gest))return false;
+    // tipo
+    if(tipo && !String(d.tipo_curso||'').toLowerCase().includes(tipo))return false;
+    // período pela data de pagamento
+    if(ini||fim){
+      const dt=parseDateBR(d.data);
+      if(!dt)return false;
+      if(ini){const dtIni=new Date(ini+'T00:00:00');if(dt<dtIni)return false;}
+      if(fim){const dtFim=new Date(fim+'T23:59:59');if(dt>dtFim)return false;}
+    }
+    return true;
+  });
+  pagAtual=1;
+  atualizarKPIs();
+  renderRanking();
+  renderCharts();
+  renderTabela();
+}
+
+function filtrar(){aplicarFiltros();}
+
+function limparFiltros(){
+  document.getElementById('filtroInicio').value='';
+  document.getElementById('filtroFim').value='';
+  document.getElementById('filtroGestor').value='';
+  document.getElementById('filtroTipo').value='';
+  document.getElementById('busca').value='';
+  filtrados=[...todosDados];
+  pagAtual=1;
+  atualizarKPIs();
+  renderRanking();
+  renderCharts();
+  renderTabela();
+}
+
+function renderRanking(){
+  const cnt={};
+  filtrados.forEach(d=>{if(d.consultor)cnt[d.consultor]=(cnt[d.consultor]||0)+1;});
+  const sorted=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+  const max=sorted[0]?.[1]||1;
+  const tbody=document.getElementById('tbodyRanking');
+  if(!sorted.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--cinza)">Nenhum registro</td></tr>';return;}
+  tbody.innerHTML=sorted.map(([nome,qtd],i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${nome}</td>
+      <td><span class="qtd-badge">${qtd}</span></td>
+      <td><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(qtd/max*100)}%"></div></div></td>
+    </tr>`).join('');
+}
+
+function fmtData(d){
+  if(!d)return'–';
+  if(d.includes('/'))return d;
+  const[y,m,dd]=(d+'').split('-');
+  return dd&&m&&y?`${dd}/${m}/${y}`:d;
+}
+
+function renderTabela(){
+  const tbody=document.getElementById('tbody');
+  if(!filtrados.length){
+    tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state"><p>Nenhum registro encontrado.</p><small>Os dados aparecem aqui após o primeiro envio do formulário.</small></div></td></tr>`;
+    document.getElementById('pag').innerHTML='';return;
+  }
+  const inicio=(pagAtual-1)*POR_PAG;
+  const pag=filtrados.slice(inicio,inicio+POR_PAG);
+  tbody.innerHTML=pag.map((d,i)=>`
+    <tr>
+      <td><strong>#${d.id||inicio+i+1}</strong></td>
+      <td>${d.consultor||'–'}</td>
+      <td>${d.candidato||'–'}</td>
+      <td>${fmtData(d.data)}</td>
+      <td>${d.tipo_curso||'–'}</td>
+      <td>${d.gestor ? d.gestor.split(' ')[0]+' '+d.gestor.split(' ').slice(-1)[0] : '–'}</td>
+      <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${d.obs||''}">${d.obs||'–'}</td>
+      <td>${d.link?`<a class="link-a" href="${d.link}" target="_blank">🔗 Abrir</a>`:'–'}</td>
+      <td style="white-space:nowrap">${d.reg_em||'–'}</td>
+    </tr>`).join('');
+  renderPag();
+}
+
+function renderPag(){
+  const total=Math.ceil(filtrados.length/POR_PAG);
+  const el=document.getElementById('pag');
+  if(total<=1){el.innerHTML='';return;}
+  let h=`<span>${filtrados.length} registros</span>`;
+  if(pagAtual>1)h+=`<button class="pb" onclick="irPag(${pagAtual-1})">‹</button>`;
+  for(let p=1;p<=total;p++){
+    if(p===1||p===total||Math.abs(p-pagAtual)<=1)h+=`<button class="pb${p===pagAtual?' active':''}" onclick="irPag(${p})">${p}</button>`;
+    else if(Math.abs(p-pagAtual)===2)h+=`<span>…</span>`;
+  }
+  if(pagAtual<total)h+=`<button class="pb" onclick="irPag(${pagAtual+1})">›</button>`;
+  el.innerHTML=h;
+}
+
+function irPag(p){pagAtual=p;renderTabela();window.scrollTo(0,document.querySelector('.table-card').offsetTop-80);}
+
+function exportarExcel(){
+  if(!todosDados.length){toast('Não há dados para exportar.','#C97A00');return;}
+  const rows=todosDados.map(d=>({'ID':d.id,'Consultor(a)':d.consultor,'Nº Candidato':d.candidato,'Data Pagamento':fmtData(d.data),'Tipo de Curso':d.tipo_curso||'','Gestor(a)':d.gestor||'','Observações':d.obs,'Link Conversa':d.link,'Registrado Em':d.reg_em}));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Matrículas');
+  ws['!cols']=[{wch:6},{wch:36},{wch:16},{wch:16},{wch:42},{wch:16},{wch:32},{wch:38},{wch:40},{wch:20}];
+  const now=new Date();
+  const ts=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(wb,`matriculas_aceleradores_${ts}.xlsx`);
+  toast('✔ Excel gerado e baixado!');
+}
+
+// ── Start ──
+initForm();
+</script>
+</body>
+</html>
