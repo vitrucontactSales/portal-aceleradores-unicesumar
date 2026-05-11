@@ -108,6 +108,28 @@ textarea.ctrl{resize:vertical;min-height:90px}
   transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:999;
 }
 .toast.show{transform:translateY(0);opacity:1}
+
+/* Modal de senha */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+  z-index:1000;align-items:center;justify-content:center;
+}
+.modal-overlay.show{display:flex}
+.modal-box{
+  background:#fff;border-radius:14px;padding:36px 32px;
+  width:320px;box-shadow:0 8px 40px rgba(0,0,0,.2);
+  font-family:'Nunito',sans-serif;
+}
+.modal-box h3{color:var(--azul);font-size:1.1rem;font-weight:800;margin-bottom:8px}
+.modal-box p{color:var(--cinza);font-size:.82rem;margin-bottom:18px}
+.modal-input{
+  width:100%;padding:11px 14px;border:1.5px solid var(--borda);
+  border-radius:9px;font-size:.92rem;margin-bottom:14px;
+  font-family:'Nunito Sans',sans-serif;
+}
+.modal-input:focus{outline:none;border-color:var(--azul-c)}
+.modal-erro{color:var(--vermelho);font-size:.8rem;margin-bottom:10px;display:none}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -124,11 +146,11 @@ textarea.ctrl{resize:vertical;min-height:90px}
       <div class="h-sub">Contacte Sales · Aceleradores 52.2026</div>
     </div>
   </div>
-  <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
+  <button onclick="abrirDashboard()" class="nav-link" style="cursor:pointer">📊 Dashboard</button>
 </header>
 
 <div class="wrapper">
-  <div class="card">
+  div class="card">
     <div class="card-head">
       <h1>Aceleradores — 52.2026</h1>
       <p>Registro de matrículas · Consultores Contacte Sales</p>
@@ -302,7 +324,7 @@ textarea.ctrl{resize:vertical;min-height:90px}
           <option value="Dracena - SP">Dracena - SP</option>
           <option value="Embu das Artes - SP">Embu das Artes - SP</option>
           <option value="Encruzilhada do Sul - RS">Encruzilhada do Sul - RS</option>
-          <option value="Engenheiro Beltrão - PR">Engenheiro Beltrão - PR</option>
+          <option value="Engenheiro Beltrão - PR</option>
           <option value="Esteio - RS">Esteio - RS</option>
           <option value="Estreito - MA">Estreito - MA</option>
           <option value="Farroupilha - RS">Farroupilha - RS</option>
@@ -389,7 +411,7 @@ textarea.ctrl{resize:vertical;min-height:90px}
           <option value="Paulínia - SP">Paulínia - SP</option>
           <option value="Pedreira - SP">Pedreira - SP</option>
           <option value="Pedro II - PI">Pedro II - PI</option>
-          <option value="Pelotas - Areal - RS">Pelotas - Areal - RS</option>
+          <option value="Pelotas - Areal - RS">Pelotas - Areal - RSoption>
           <option value="Pelotas - RS">Pelotas - RS</option>
           <option value="Penápolis - SP">Penápolis - SP</option>
           <option value="Pimenta Bueno - RO">Pimenta Bueno - RO</option>
@@ -512,62 +534,104 @@ textarea.ctrl{resize:vertical;min-height:90px}
   </div>
 </div>
 
+<!-- Modal senha dashboard -->
+<div class="modal-overlay" id="modalSenha">
+  <div class="modal-box">
+    <h3>🔒 Acesso ao Dashboard</h3>
+    <p>Digite a senha para visualizar o dashboard de matrículas.</p>
+    <input class="modal-input" type="password" id="inputSenha"
+           placeholder="Senha" onkeydown="if(event.key==='Enter')verificarSenha()">
+    <div class="modal-erro" id="errSenha">Senha incorreta. Tente novamente.</div>
+    <div class="modal-btns">
+      <button class="btn btn-s" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-p" onclick="verificarSenha()">Entrar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-const DADOS_KEY = 'unicesumar_aceleradores_v2';
+const DADOS_KEY  = 'unicesumar_aceleradores_v2';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwQf_QC9_-AcjaEBj-aMOUvUfmYDMDpBviCxaNF270UkLKbd3TiWbcECvSnkTx82u4Lg/exec';
 
 function toastMsg(msg, cor='#1E9E62') {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.style.background = cor;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+  setTimeout(() => t.classList.remove('show'), 3500);
 }
 
 function limpar() {
-  ['consultor','candidato','dataPagamento','linkConversa','observacoes','polo']
-    .forEach(id => { document.getElementById(id).value = ''; resetEstilo(id); });
-}
-
-function resetEstilo(id) {
-  const el = document.getElementById(id);
-  el.style.borderColor = '';
-  el.style.boxShadow  = '';
+  ['consultor','candidato','dataPagamento','linkConversa','observacoes','polo'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
 }
 
 function registrar() {
-  const campos = ['consultor','candidato','dataPagamento','linkConversa','observacoes','polo'];
-  let ok = true;
-  campos.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el.value.trim()) {
-      el.style.borderColor = '#D93B3B';
-      el.style.boxShadow   = '0 0 0 3px rgba(217,59,59,.12)';
-      ok = false;
-    } else resetEstilo(id);
-  });
+  const consultor     = document.getElementById('consultor').value.trim();
+  const candidato     = document.getElementById('candidato').value.trim();
+  const dataPagamento = document.getElementById('dataPagamento').value;
+  const linkConversa  = document.getElementById('linkConversa').value.trim();
+  const observacoes   = document.getElementById('observacoes').value.trim();
+  const polo          = document.getElementById('polo').value;
 
-  if (!ok) { toastMsg('⚠ Preencha todos os campos obrigatórios.', '#C97A00'); return; }
+  if (!consultor || !candidato || !dataPagamento || !linkConversa || !observacoes || !polo) {
+    toastMsg('⚠ Preencha todos os campos obrigatórios.', '#D93B3B');
+    return;
+  }
 
   const dados = JSON.parse(localStorage.getItem(DADOS_KEY) || '[]');
-  const id = dados.length ? (Math.max(...dados.map(d => d.id || 0)) + 1) : 1;
+  const id = dados.length ? Math.max(...dados.map(d => d.id || 0)) + 1 : 1;
+  const agora = new Date().toLocaleString('pt-BR');
 
   dados.push({
-    id,
-    consultor:    document.getElementById('consultor').value,
-    candidato:    document.getElementById('candidato').value,
-    data:         document.getElementById('dataPagamento').value,
-    link:         document.getElementById('linkConversa').value,
-    obs:          document.getElementById('observacoes').value,
-    polo:         document.getElementById('polo').value,
-    registrado_em: new Date().toLocaleString('pt-BR'),
+    id, consultor, candidato,
+    data: dataPagamento,
+    link: linkConversa,
+    obs: observacoes,
+    polo,
+    registrado_em: agora,
+    tipo_curso: '',
+    gestor: ''
   });
-
   localStorage.setItem(DADOS_KEY, JSON.stringify(dados));
-  limpar();
+
+  const payload = dados[dados.length - 1];
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(() => {});
+
   toastMsg('✔ Matrícula registrada com sucesso!');
+  limpar();
+}
+
+function abrirDashboard() {
+  document.getElementById('inputSenha').value = '';
+  document.getElementById('errSenha').style.display = 'none';
+  document.getElementById('modalSenha').classList.add('show');
+  setTimeout(() => document.getElementById('inputSenha').focus(), 100);
+}
+
+function fecharModal() {
+  document.getElementById('modalSenha').classList.remove('show');
+}
+
+function verificarSenha() {
+  const senha = document.getElementById('inputSenha').value;
+  if (senha === 'Aceleradores@2026') {
+    sessionStorage.setItem('dash_auth', '1');
+    window.location.href = 'dashboard.html';
+  } else {
+    document.getElementById('errSenha').style.display = 'block';
+    document.getElementById('inputSenha').value = '';
+    document.getElementById('inputSenha').focus();
+  }
 }
 </script>
 </body>
-</html>
+            </html>
