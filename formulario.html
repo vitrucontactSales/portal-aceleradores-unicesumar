@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aceleradores 52.2026 — UniCesumar</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#1A4E8C; --azul-m:#2466B0; --azul-c:#3B8DD4;
+  --bg:#E8F2FB; --borda:#D0DFF0; --cinza:#5B6474;
+  --cinza-cl:#F4F6FA; --vermelho:#D93B3B; --verde:#1E9E62;
+  --shadow:0 4px 24px rgba(26,78,140,.10); --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);min-height:100vh}
+
+header{
+  background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 60%,var(--azul-c) 100%);
+  padding:0 32px; display:flex; align-items:center;
+  justify-content:space-between; height:68px;
+  box-shadow:0 2px 12px rgba(26,78,140,.18);
+}
+.logo-area{display:flex;align-items:center;gap:14px}
+.logo-svg{width:40px;height:40px}
+.h-title{font-family:'Nunito',sans-serif;color:#fff;font-size:1.12rem;font-weight:800;line-height:1.2}
+.h-sub{color:rgba(255,255,255,.75);font-size:.78rem;font-weight:600}
+.nav-link{
+  color:rgba(255,255,255,.85); text-decoration:none;
+  background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.2);
+  border-radius:8px; padding:7px 18px;
+  font-family:'Nunito',sans-serif;font-weight:700;font-size:.85rem;
+  transition:all .2s;
+}
+.nav-link:hover{background:rgba(255,255,255,.25);color:#fff}
+
+.wrapper{max-width:680px;margin:36px auto;padding:0 16px 60px}
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+
+.card-head{
+  background:linear-gradient(135deg,var(--azul),var(--azul-c));
+  padding:28px 32px;position:relative;overflow:hidden;
+}
+.card-head::before{
+  content:'';position:absolute;right:-30px;bottom:-30px;
+  width:160px;height:160px;border-radius:50%;
+  background:rgba(255,255,255,.07);
+}
+.card-head h1{font-family:'Nunito',sans-serif;color:#fff;font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.card-head p{color:rgba(255,255,255,.78);font-size:.82rem}
+
+.req-note{
+  padding:10px 32px;background:#FFF8E1;
+  border-bottom:1px solid #FFE082;font-size:.78rem;color:#7B5800;
+}
+
+.body{padding:28px 32px 24px;display:flex;flex-direction:column;gap:20px}
+.group{display:flex;flex-direction:column;gap:7px}
+.label{
+  font-family:'Nunito',sans-serif;font-weight:700;font-size:.9rem;
+  color:var(--azul);display:flex;align-items:center;gap:7px;
+}
+.num{
+  background:var(--azul);color:#fff;width:22px;height:22px;
+  border-radius:50%;display:inline-flex;align-items:center;
+  justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;
+}
+.req{color:var(--vermelho);margin-left:2px}
+.sw{position:relative}
+.sw::after{
+  content:'▾';position:absolute;right:13px;top:50%;
+  transform:translateY(-50%);color:var(--azul-c);pointer-events:none;
+}
+.ctrl{
+  width:100%;padding:11px 14px;border:1.5px solid var(--borda);
+  border-radius:9px;font-family:'Nunito Sans',sans-serif;
+  font-size:.92rem;color:#2D3748;background:var(--cinza-cl);
+  transition:border-color .2s,box-shadow .2s;
+  appearance:none;-webkit-appearance:none;
+}
+.ctrl:focus{
+  outline:none;border-color:var(--azul-c);background:#fff;
+  box-shadow:0 0 0 3px rgba(59,141,212,.15);
+}
+.ctrl::placeholder{color:#A0AEC0}
+textarea.ctrl{resize:vertical;min-height:90px}
+
+.foot{padding:0 32px 28px;display:flex;justify-content:flex-end;gap:12px}
+.btn{
+  padding:11px 28px;border-radius:9px;font-family:'Nunito',sans-serif;
+  font-weight:800;font-size:.92rem;cursor:pointer;border:none;transition:all .2s;
+}
+.btn-p{
+  background:linear-gradient(135deg,var(--azul),var(--azul-c));
+  color:#fff;box-shadow:0 3px 12px rgba(26,78,140,.25);
+}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(26,78,140,.35)}
+.btn-s{background:var(--cinza-cl);color:var(--cinza);border:1.5px solid var(--borda)}
+.btn-s:hover{background:var(--borda)}
+
+.toast{
+  position:fixed;bottom:28px;right:28px;
+  background:var(--verde);color:#fff;padding:14px 22px;
+  border-radius:10px;font-family:'Nunito',sans-serif;font-weight:700;
+  font-size:.92rem;box-shadow:0 6px 24px rgba(0,0,0,.15);
+  display:flex;align-items:center;gap:10px;
+  transform:translateY(100px);opacity:0;
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:999;
+}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <svg class="logo-svg" viewBox="0 0 42 42" fill="none">
+      <path d="M8 8 Q8 34 21 34 Q34 34 34 8" stroke="white" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <circle cx="21" cy="14" r="5.5" fill="#60B8F0"/>
+      <path d="M13.5 14 Q13.5 22 21 22 Q28.5 22 28.5 14" stroke="rgba(255,255,255,.55)" stroke-width="3" fill="none"/>
+    </svg>
+    <div>
+      <div class="h-title">UniCesumar</div>
+      <div class="h-sub">Contacte Sales · Aceleradores 52.2026</div>
+    </div>
+  </div>
+  <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
+</header>
+
+<div class="wrapper">
+  <div class="card">
+    <div class="card-head">
+      <h1>Aceleradores — 52.2026</h1>
+      <p>Registro de matrículas · Consultores Contacte Sales</p>
+    </div>
+    <div class="req-note">⚠ Todos os campos marcados com <strong> * </strong> são obrigatórios.</div>
+
+    <div class="body">
+
+      <div class="group">
+        <label class="label"><span class="num">1</span> Nome do(a) Consultor(a) <span class="req">*</span></label>
+        <div class="sw">
+          <select class="ctrl" id="consultor" required>
+            <option value="">Selecione o(a) Consultor(a)</option>
+          <option value="Alessandra Rosa Cabral">Alessandra Rosa Cabral</option>
+          <option value="Ana Karoline Cristo Ribeiro">Ana Karoline Cristo Ribeiro</option>
+          <option value="Andreia Ferreira De Oliveira">Andreia Ferreira De Oliveira</option>
+          <option value="Beatriz De Oliveira Xavier">Beatriz De Oliveira Xavier</option>
+          <option value="Beatriz Moreira De Maria">Beatriz Moreira De Maria</option>
+          <option value="Beatriz Shiki Portilho">Beatriz Shiki Portilho</option>
+          <option value="Caroline Silva Santos">Caroline Silva Santos</option>
+          <option value="Celia De Souza Lima">Celia De Souza Lima</option>
+          <option value="Edenilson Teodoro Junior">Edenilson Teodoro Junior</option>
+          <option value="Elaine Kubitz">Elaine Kubitz</option>
+          <option value="Erick Alexsander Do Santos">Erick Alexsander Do Santos</option>
+          <option value="Evelin Cristini Da Silva">Evelin Cristini Da Silva</option>
+          <option value="Fernanda Magioto">Fernanda Magioto</option>
+          <option value="Gabriel Candido Silva">Gabriel Candido Silva</option>
+          <option value="Gessica Da Cruz Barturi Luciano">Gessica Da Cruz Barturi Luciano</option>
+          <option value="Giovana Rossi">Giovana Rossi</option>
+          <option value="Giovanna Cadide Cabral">Giovanna Cadide Cabral</option>
+          <option value="Gislaine Angélica Rodrigues Silva">Gislaine Angélica Rodrigues Silva</option>
+          <option value="Gustavo Qualho Cazoni">Gustavo Qualho Cazoni</option>
+          <option value="Helen Almeida Maffioletti">Helen Almeida Maffioletti</option>
+          <option value="Henrique Caua Cupertino Navarro">Henrique Caua Cupertino Navarro</option>
+          <option value="Ingrid Kawane Ribeiro Moreira">Ingrid Kawane Ribeiro Moreira</option>
+          <option value="Isabela Cristina Melo Agostini">Isabela Cristina Melo Agostini</option>
+          <option value="Joselma Oliveira Jardim">Joselma Oliveira Jardim</option>
+          <option value="Joyce Andressa Da Silva Valentino">Joyce Andressa Da Silva Valentino</option>
+          <option value="Julia Caroline Da Silva Pessoa">Julia Caroline Da Silva Pessoa</option>
+          <option value="Julie Ndinga Zeferino Da Silva">Julie Ndinga Zeferino Da Silva</option>
+          <option value="Leandra Santos Lorenzetti">Leandra Santos Lorenzetti</option>
+          <option value="Leonardo Neves Dos Santos">Leonardo Neves Dos Santos</option>
+          <option value="Leonardo Salvalagio Gibin">Leonardo Salvalagio Gibin</option>
+          <option value="Luciana Simili Crecencio">Luciana Simili Crecencio</option>
+          <option value="Marcos Vinícius Ferreira Fontes">Marcos Vinícius Ferreira Fontes</option>
+          <option value="Mariane Oliveira Dias">Mariane Oliveira Dias</option>
+          <option value="Neide Dagues Costa">Neide Dagues Costa</option>
+          <option value="Pedro Henrique Ribeiro Dos Santos">Pedro Henrique Ribeiro Dos Santos</option>
+          <option value="Sabrina Manoela Dos Santos Lima">Sabrina Manoela Dos Santos Lima</option>
+          <option value="Sabrina Soares Santos Guido">Sabrina Soares Santos Guido</option>
+          <option value="Sander Miguel Figueroa">Sander Miguel Figueroa</option>
+          <option value="Sandra Regina Braziel">Sandra Regina Braziel</option>
+          <option value="Sarah Da Silva Purnucena">Sarah Da Silva Purnucena</option>
+          <option value="Sthefanny Dayanne Da Silva Roberto">Sthefanny Dayanne Da Silva Roberto</option>
+          <option value="Talita Araujo Dos Santos">Talita Araujo Dos Santos</option>
+          <option value="Tauany Bezerra De Souza">Tauany Bezerra De Souza</option>
+          <option value="Thayssa Victoria Da Silva Pereira">Thayssa Victoria Da Silva Pereira</option>
+          <option value="Vanusa Silvino">Vanusa Silvino</option>
+          <option value="Victor Kendy Kozina">Victor Kendy Kozina</option>
+          <option value="Willyan Gabriel Lopes Moreira De Almeida">Willyan Gabriel Lopes Moreira De Almeida</option>
+          <option value="Yara Caleffi Costa">Yara Caleffi Costa</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="group">
+        <label class="label"><span class="num">2</span> Número de Candidato <span class="req">*</span></label>
+        <input class="ctrl" type="text" id="candidato" placeholder="Ex.: 123456" required>
+      </div>
+
+      <div class="group">
+        <label class="label"><span class="num">3</span> Data do Pagamento <span class="req">*</span></label>
+        <input class="ctrl" type="date" id="dataPagamento" required>
+      </div>
+
+      <div class="group">
+        <label class="label"><span class="num">4</span> Link da Conversa <span class="req">*</span></label>
+        <input class="ctrl" type="url" id="linkConversa" placeholder="https://" required>
+      </div>
+
+      <div class="group">
+        <label class="label"><span class="num">5</span> Observações <span class="req">*</span></label>
+        <textarea class="ctrl" id="observacoes" placeholder="Observações relevantes sobre a matrícula..." required></textarea>
+      </div>
+
+      <div class="group">
+        <label class="label"><span class="num">6</span> Polo <span class="req">*</span></label>
+        <div class="sw">
+          <select class="ctrl" id="polo" required>
+            <option value="">Selecione o Polo</option>
+          <option value="Abelardo Luz - SC">Abelardo Luz - SC</option>
+          <option value="Abreu e Lima - PE">Abreu e Lima - PE</option>
+          <option value="Adamantina - SP">Adamantina - SP</option>
+          <option value="Alegrete - RS">Alegrete - RS</option>
+          <option value="Alta Floresta D'Oeste - RO">Alta Floresta D'Oeste - RO</option>
+          <option value="Alvorada - RS">Alvorada - RS</option>
+          <option value="Amambai - MS">Amambai - MS</option>
+          <option value="Amarante do Maranhão - MA">Amarante do Maranhão - MA</option>
+          <option value="Amparo - SP">Amparo - SP</option>
+          <option value="Andradina - SP">Andradina - SP</option>
+          <option value="Anápolis - GO">Anápolis - GO</option>
+          <option value="Aparecida - SP">Aparecida - SP</option>
+          <option value="Aparecida de Goiânia - GO">Aparecida de Goiânia - GO</option>
+          <option value="Apiaí - SP">Apiaí - SP</option>
+          <option value="Apucarana - PR">Apucarana - PR</option>
+          <option value="Aracaju - Jabotiana - SE">Aracaju - Jabotiana - SE</option>
+          <option value="Aracaju - SE">Aracaju - SE</option>
+          <option value="Aracaju - Siqueira Campos - SE">Aracaju - Siqueira Campos - SE</option>
+          <option value="Araguari - MG">Araguari - MG</option>
+          <option value="Araguatins - TO">Araguatins - TO</option>
+          <option value="Arapongas - PR">Arapongas - PR</option>
+          <option value="Arapoti - PR">Arapoti - PR</option>
+          <option value="Araranguá - SC">Araranguá - SC</option>
+          <option value="Araçatuba - SP">Araçatuba - SP</option>
+          <option value="Arroio do Meio - RS">Arroio do Meio - RS</option>
+          <option value="Artur Nogueira - SP">Artur Nogueira - SP</option>
+          <option value="Arujá - SP">Arujá - SP</option>
+          <option value="Atibaia - SP">Atibaia - SP</option>
+          <option value="Augustinópolis - TO">Augustinópolis - TO</option>
+          <option value="Balsas - MA">Balsas - MA</option>
+          <option value="Barbacena - MG">Barbacena - MG</option>
+          <option value="Barretos - SP">Barretos - SP</option>
+          <option value="Barueri - Alphaville - SP">Barueri - Alphaville - SP</option>
+          <option value="Barueri - SP">Barueri - SP</option>
+          <option value="Belo Horizonte - Barreiro - MG">Belo Horizonte - Barreiro - MG</option>
+          <option value="Belo Horizonte - Savassi - MG">Belo Horizonte - Savassi - MG</option>
+          <option value="Belém - PA">Belém - PA</option>
+          <option value="Bento Gonçalves - RS">Bento Gonçalves - RS</option>
+          <option value="Bituruna - PR">Bituruna - PR</option>
+          <option value="Blumenau - SC">Blumenau - SC</option>
+          <option value="Boa Esperança - MG">Boa Esperança - MG</option>
+          <option value="Bom Jesus - PI">Bom Jesus - PI</option>
+          <option value="Brasília - Asa Sul - DF">Brasília - Asa Sul - DF</option>
+          <option value="Braço do Norte - SC">Braço do Norte - SC</option>
+          <option value="Butiá - RS">Butiá - RS</option>
+          <option value="Caarapó - MS">Caarapó - MS</option>
+          <option value="Cachoeira do Sul - RS">Cachoeira do Sul - RS</option>
+          <option value="Cajati - SP">Cajati - SP</option>
+          <option value="Camaquã - RS">Camaquã - RS</option>
+          <option value="Camaragibe - PE">Camaragibe - PE</option>
+          <option value="Cambé - PR">Cambé - PR</option>
+          <option value="Campina Grande - Católé - PB">Campina Grande - Católé - PB</option>
+          <option value="Campina Grande - PB">Campina Grande - PB</option>
+          <option value="Campinas - Centro - SP">Campinas - Centro - SP</option>
+          <option value="Campinas - John Boyd - SP">Campinas - John Boyd - SP</option>
+          <option value="Campinas - Ouro Verde - SP">Campinas - Ouro Verde - SP</option>
+          <option value="Campinas - SP">Campinas - SP</option>
+          <option value="Campinas - Taquaral - SP">Campinas - Taquaral - SP</option>
+          <option value="Campo Bom - RS">Campo Bom - RS</option>
+          <option value="Campo Grande - MS">Campo Grande - MS</option>
+          <option value="Campos Gerais - MG">Campos Gerais - MG</option>
+          <option value="Canindé de São Francisco - SE">Canindé de São Francisco - SE</option>
+          <option value="Canoas - Boqueirão - RS">Canoas - Boqueirão - RS</option>
+          <option value="Canoas - Santos Ferreira - RS">Canoas - Santos Ferreira - RS</option>
+          <option value="Canto do Buriti - PI">Canto do Buriti - PI</option>
+          <option value="Capelinha - MG">Capelinha - MG</option>
+          <option value="Caraguatatuba - SP">Caraguatatuba - SP</option>
+          <option value="Cascavel - PR">Cascavel - PR</option>
+          <option value="Cataguases - MG">Cataguases - MG</option>
+          <option value="Catalão - GO">Catalão - GO</option>
+          <option value="Charqueadas - RS">Charqueadas - RS</option>
+          <option value="Congonhas - MG">Congonhas - MG</option>
+          <option value="Conselheiro Lafaiete - MG">Conselheiro Lafaiete - MG</option>
+          <option value="Criciúma - SC">Criciúma - SC</option>
+          <option value="Cruzeiro - SP">Cruzeiro - SP</option>
+          <option value="Curitiba - Campus - PR">Curitiba - Campus - PR</option>
+          <option value="Curitiba - Centro - PR">Curitiba - Centro - PR</option>
+          <option value="Diadema - SP">Diadema - SP</option>
+          <option value="Dois Vizinhos - PR">Dois Vizinhos - PR</option>
+          <option value="Dourados - MS">Dourados - MS</option>
+          <option value="Dracena - SP">Dracena - SP</option>
+          <option value="Embu das Artes - SP">Embu das Artes - SP</option>
+          <option value="Encruzilhada do Sul - RS">Encruzilhada do Sul - RS</option>
+          <option value="Engenheiro Beltrão - PR">Engenheiro Beltrão - PR</option>
+          <option value="Esteio - RS">Esteio - RS</option>
+          <option value="Estreito - MA">Estreito - MA</option>
+          <option value="Farroupilha - RS">Farroupilha - RS</option>
+          <option value="Floriano - PI">Floriano - PI</option>
+          <option value="Florianópolis - SC">Florianópolis - SC</option>
+          <option value="Forquilhinha - SC">Forquilhinha - SC</option>
+          <option value="Fortaleza - Centro - CE">Fortaleza - Centro - CE</option>
+          <option value="Fortaleza - Parangaba - CE">Fortaleza - Parangaba - CE</option>
+          <option value="Foz do Iguaçu - PR">Foz do Iguaçu - PR</option>
+          <option value="Frederico Westphalen - RS">Frederico Westphalen - RS</option>
+          <option value="Fátima do Sul - MS">Fátima do Sul - MS</option>
+          <option value="Garopaba - SC">Garopaba - SC</option>
+          <option value="Goiânia - GO">Goiânia - GO</option>
+          <option value="Governador Valadares - MG">Governador Valadares - MG</option>
+          <option value="Gravataí - Morada do Vale - RS">Gravataí - Morada do Vale - RS</option>
+          <option value="Guarabira - PB">Guarabira - PB</option>
+          <option value="Guararapes - SP">Guararapes - SP</option>
+          <option value="Guarulhos - SP">Guarulhos - SP</option>
+          <option value="Guaíba - RS">Guaíba - RS</option>
+          <option value="Ibirubá - RS">Ibirubá - RS</option>
+          <option value="Ijuí - RS">Ijuí - RS</option>
+          <option value="Imbituba - SC">Imbituba - SC</option>
+          <option value="Imbituva - PR">Imbituva - PR</option>
+          <option value="Imperatriz - Jardim São Luiz - MA">Imperatriz - Jardim São Luiz - MA</option>
+          <option value="Imperatriz - MA">Imperatriz - MA</option>
+          <option value="Indaiatuba - SP">Indaiatuba - SP</option>
+          <option value="Itabirito - MG">Itabirito - MG</option>
+          <option value="Itapecerica da Serra - SP">Itapecerica da Serra - SP</option>
+          <option value="Itapeva - SP">Itapeva - SP</option>
+          <option value="Itaporã - MS">Itaporã - MS</option>
+          <option value="Itaquaquecetuba - SP">Itaquaquecetuba - SP</option>
+          <option value="Itu - SP">Itu - SP</option>
+          <option value="Ituiutaba - MG">Ituiutaba - MG</option>
+          <option value="Ivinhema - MS">Ivinhema - MS</option>
+          <option value="Içara - SC">Içara - SC</option>
+          <option value="Jacareí - SP">Jacareí - SP</option>
+          <option value="Jaguariúna - SP">Jaguariúna - SP</option>
+          <option value="Jataí - GO">Jataí - GO</option>
+          <option value="Joinville - SC">Joinville - SC</option>
+          <option value="João Pessoa - Centro - PB">João Pessoa - Centro - PB</option>
+          <option value="João Pessoa - Geisel - PB">João Pessoa - Geisel - PB</option>
+          <option value="João Pessoa - Mangabeira - PB">João Pessoa - Mangabeira - PB</option>
+          <option value="João Pessoa - PB">João Pessoa - PB</option>
+          <option value="Juara - MT">Juara - MT</option>
+          <option value="Jundiaí - SP">Jundiaí - SP</option>
+          <option value="Junqueirópolis - SP">Junqueirópolis - SP</option>
+          <option value="Lajeado - RS">Lajeado - RS</option>
+          <option value="Laranjeiras do Sul - PR">Laranjeiras do Sul - PR</option>
+          <option value="Lins - SP">Lins - SP</option>
+          <option value="Londrina - Centro - PR">Londrina - Centro - PR</option>
+          <option value="Londrina - PR">Londrina - PR</option>
+          <option value="Lorena - SP">Lorena - SP</option>
+          <option value="Maceió - Farol - AL">Maceió - Farol - AL</option>
+          <option value="Manaus - Centro - AM">Manaus - Centro - AM</option>
+          <option value="Maracaju - MS">Maracaju - MS</option>
+          <option value="Marialva - PR">Marialva - PR</option>
+          <option value="Maringá - PR">Maringá - PR</option>
+          <option value="Marília - SP">Marília - SP</option>
+          <option value="Matinhos - PR">Matinhos - PR</option>
+          <option value="Mineiros - GO">Mineiros - GO</option>
+          <option value="Miranda - MS">Miranda - MS</option>
+          <option value="Montes Claros - MG">Montes Claros - MG</option>
+          <option value="Muriaé - MG">Muriaé - MG</option>
+          <option value="Nanuque - MG">Nanuque - MG</option>
+          <option value="Natal - RN">Natal - RN</option>
+          <option value="Nova Alvorada do Sul - MS">Nova Alvorada do Sul - MS</option>
+          <option value="Nova Andradina - MS">Nova Andradina - MS</option>
+          <option value="Nova Brasilândia D'Oeste - RO">Nova Brasilândia D'Oeste - RO</option>
+          <option value="Oeiras - PI">Oeiras - PI</option>
+          <option value="Olho D'Água das Flores - AL">Olho D'Água das Flores - AL</option>
+          <option value="Olinda - PE">Olinda - PE</option>
+          <option value="Olinda - Peixinhos - PE">Olinda - Peixinhos - PE</option>
+          <option value="Osasco - SP">Osasco - SP</option>
+          <option value="Osório - RS">Osório - RS</option>
+          <option value="Ouro Branco - MG">Ouro Branco - MG</option>
+          <option value="Paiçandu - PR">Paiçandu - PR</option>
+          <option value="Palmas - PR">Palmas - PR</option>
+          <option value="Palmeira - PR">Palmeira - PR</option>
+          <option value="Palmeira das Missões - RS">Palmeira das Missões - RS</option>
+          <option value="Paranaíba - MS">Paranaíba - MS</option>
+          <option value="Parobé - RS">Parobé - RS</option>
+          <option value="Paulista - Janga - PE">Paulista - Janga - PE</option>
+          <option value="Paulista - PE">Paulista - PE</option>
+          <option value="Paulínia - SP">Paulínia - SP</option>
+          <option value="Pedreira - SP">Pedreira - SP</option>
+          <option value="Pedro II - PI">Pedro II - PI</option>
+          <option value="Pelotas - Areal - RS">Pelotas - Areal - RS</option>
+          <option value="Pelotas - RS">Pelotas - RS</option>
+          <option value="Penápolis - SP">Penápolis - SP</option>
+          <option value="Pimenta Bueno - RO">Pimenta Bueno - RO</option>
+          <option value="Pindamonhangaba - SP">Pindamonhangaba - SP</option>
+          <option value="Pinhão - PR">Pinhão - PR</option>
+          <option value="Pirapozinho - SP">Pirapozinho - SP</option>
+          <option value="Ponta Grossa - PR">Ponta Grossa - PR</option>
+          <option value="Porto Alegre - Baltazar - RS">Porto Alegre - Baltazar - RS</option>
+          <option value="Porto Alegre - Cavalhada - RS">Porto Alegre - Cavalhada - RS</option>
+          <option value="Porto Alegre - Centro Histórico - RS">Porto Alegre - Centro Histórico - RS</option>
+          <option value="Porto Alegre - Hípica - RS">Porto Alegre - Hípica - RS</option>
+          <option value="Porto Alegre - Menino Deus - RS">Porto Alegre - Menino Deus - RS</option>
+          <option value="Porto Alegre - Nonoai - RS">Porto Alegre - Nonoai - RS</option>
+          <option value="Porto Alegre - Partenon - RS">Porto Alegre - Partenon - RS</option>
+          <option value="Porto Alegre - Petrópolis - RS">Porto Alegre - Petrópolis - RS</option>
+          <option value="Porto Alegre - Protásio Alves - RS">Porto Alegre - Protásio Alves - RS</option>
+          <option value="Porto Alegre - Sarandi - RS">Porto Alegre - Sarandi - RS</option>
+          <option value="Porto Alegre - Tristeza - RS">Porto Alegre - Tristeza - RS</option>
+          <option value="Porto Ferreira - SP">Porto Ferreira - SP</option>
+          <option value="Porto Franco - MA">Porto Franco - MA</option>
+          <option value="Portão - RS">Portão - RS</option>
+          <option value="Presidente Epitácio - SP">Presidente Epitácio - SP</option>
+          <option value="Presidente Getúlio - SC">Presidente Getúlio - SC</option>
+          <option value="Presidente Prudente - SP">Presidente Prudente - SP</option>
+          <option value="Presidente Venceslau - SP">Presidente Venceslau - SP</option>
+          <option value="Pão de Açúcar - AL">Pão de Açúcar - AL</option>
+          <option value="Recife - PE">Recife - PE</option>
+          <option value="Redenção - PA">Redenção - PA</option>
+          <option value="Regente Feijó - SP">Regente Feijó - SP</option>
+          <option value="Ribeirão Preto - Centro - SP">Ribeirão Preto - Centro - SP</option>
+          <option value="Rio Brilhante - MS">Rio Brilhante - MS</option>
+          <option value="Rio de Janeiro - Barra da Tijuca - RJ">Rio de Janeiro - Barra da Tijuca - RJ</option>
+          <option value="Rio de Janeiro - Tijuca - RJ">Rio de Janeiro - Tijuca - RJ</option>
+          <option value="Rolândia - PR">Rolândia - PR</option>
+          <option value="Salto de Pirapora - SP">Salto de Pirapora - SP</option>
+          <option value="Salvador - BA">Salvador - BA</option>
+          <option value="Salvador - BA">Salvador - BA</option>
+          <option value="Santa Isabel - SP">Santa Isabel - SP</option>
+          <option value="Santa Rita - PB">Santa Rita - PB</option>
+          <option value="Santa Rosa - RS">Santa Rosa - RS</option>
+          <option value="Santana de Parnaíba - SP">Santana de Parnaíba - SP</option>
+          <option value="Santana do Ipanema - AL">Santana do Ipanema - AL</option>
+          <option value="Santiago - RS">Santiago - RS</option>
+          <option value="Santo André - Centro - SP">Santo André - Centro - SP</option>
+          <option value="Santo Antônio de Posse - SP">Santo Antônio de Posse - SP</option>
+          <option value="Santo Antônio do Sudoeste - PR">Santo Antônio do Sudoeste - PR</option>
+          <option value="Santo Ângelo - RS">Santo Ângelo - RS</option>
+          <option value="Santos - Centro - SP">Santos - Centro - SP</option>
+          <option value="Santos - Embaré - SP">Santos - Embaré - SP</option>
+          <option value="Santos - SP">Santos - SP</option>
+          <option value="Santos Dumont - MG">Santos Dumont - MG</option>
+          <option value="Sapiranga - RS">Sapiranga - RS</option>
+          <option value="Sapucaia do Sul - RS">Sapucaia do Sul - RS</option>
+          <option value="Sarandi - PR">Sarandi - PR</option>
+          <option value="Sertãozinho - SP">Sertãozinho - SP</option>
+          <option value="Sidrolândia - MS">Sidrolândia - MS</option>
+          <option value="Suzano - Jardim Dona Benta - SP">Suzano - Jardim Dona Benta - SP</option>
+          <option value="Suzano - SP">Suzano - SP</option>
+          <option value="São Bernardo do Campo - Assunção - SP">São Bernardo do Campo - Assunção - SP</option>
+          <option value="São Bernardo do Campo - Baeta Neves - SP">São Bernardo do Campo - Baeta Neves - SP</option>
+          <option value="São Francisco de Paula - RS">São Francisco de Paula - RS</option>
+          <option value="São Francisco do Sul - SC">São Francisco do Sul - SC</option>
+          <option value="São Gabriel - RS">São Gabriel - RS</option>
+          <option value="São Gabriel do Oeste - MS">São Gabriel do Oeste - MS</option>
+          <option value="São Joaquim - SC">São Joaquim - SC</option>
+          <option value="São José da Tapera - AL">São José da Tapera - AL</option>
+          <option value="São João - PR">São João - PR</option>
+          <option value="São João Del Rei - MG">São João Del Rei - MG</option>
+          <option value="São João da Boa Vista - SP">São João da Boa Vista - SP</option>
+          <option value="São João do Piauí - PI">São João do Piauí - PI</option>
+          <option value="São João dos Patos - MA">São João dos Patos - MA</option>
+          <option value="São Lourenço do Oeste - SC">São Lourenço do Oeste - SC</option>
+          <option value="São Luís - MA">São Luís - MA</option>
+          <option value="São Luís - São Francisco - MA">São Luís - São Francisco - MA</option>
+          <option value="São Paulo - Lapa - SP">São Paulo - Lapa - SP</option>
+          <option value="São Paulo - Paulista - SP">São Paulo - Paulista - SP</option>
+          <option value="São Paulo - Santana - SP">São Paulo - Santana - SP</option>
+          <option value="São Paulo - Santo Amaro - SP">São Paulo - Santo Amaro - SP</option>
+          <option value="São Paulo - São Miguel Paulista - SP">São Paulo - São Miguel Paulista - SP</option>
+          <option value="São Paulo - Tatuapé - SP">São Paulo - Tatuapé - SP</option>
+          <option value="São Pedro - SP">São Pedro - SP</option>
+          <option value="São Roque - SP">São Roque - SP</option>
+          <option value="São Sebastião - SP">São Sebastião - SP</option>
+          <option value="São Vicente - SP">São Vicente - SP</option>
+          <option value="Tapejara - RS">Tapejara - RS</option>
+          <option value="Taquara - RS">Taquara - RS</option>
+          <option value="Tatuí - SP">Tatuí - SP</option>
+          <option value="Taubaté - SP">Taubaté - SP</option>
+          <option value="Teresina - Parque Piauí - PI">Teresina - Parque Piauí - PI</option>
+          <option value="Terra Boa - PR">Terra Boa - PR</option>
+          <option value="Teutônia - RS">Teutônia - RS</option>
+          <option value="Teófilo Otoni - MG">Teófilo Otoni - MG</option>
+          <option value="Timon - MA">Timon - MA</option>
+          <option value="Tocantinópolis - TO">Tocantinópolis - TO</option>
+          <option value="Toledo - PR">Toledo - PR</option>
+          <option value="Tramandaí - RS">Tramandaí - RS</option>
+          <option value="Três Lagoas - MS">Três Lagoas - MS</option>
+          <option value="Três de Maio - RS">Três de Maio - RS</option>
+          <option value="Tubarão - SC">Tubarão - SC</option>
+          <option value="Ubatuba - SP">Ubatuba - SP</option>
+          <option value="Uberlândia - MG">Uberlândia - MG</option>
+          <option value="Uberlândia - Parque do Sabiá - MG">Uberlândia - Parque do Sabiá - MG</option>
+          <option value="Uberlândia - Planalto - MG">Uberlândia - Planalto - MG</option>
+          <option value="Uruguaiana - RS">Uruguaiana - RS</option>
+          <option value="Uruçuí - PI">Uruçuí - PI</option>
+          <option value="Valinhos - SP">Valinhos - SP</option>
+          <option value="Venâncio Aires - RS">Venâncio Aires - RS</option>
+          <option value="Água Branca - PI">Água Branca - PI</option>
+          <option value="Águas Formosas - MG">Águas Formosas - MG</option>
+          <option value="Álvares Machado - SP">Álvares Machado - SP</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+    <div class="foot">
+      <button class="btn btn-s" onclick="limpar()">Limpar</button>
+      <button class="btn btn-p" onclick="registrar()">✔ Registrar Matrícula</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DADOS_KEY = 'unicesumar_aceleradores_v2';
+
+function toastMsg(msg, cor='#1E9E62') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = cor;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function limpar() {
+  ['consultor','candidato','dataPagamento','linkConversa','observacoes','polo']
+    .forEach(id => { document.getElementById(id).value = ''; resetEstilo(id); });
+}
+
+function resetEstilo(id) {
+  const el = document.getElementById(id);
+  el.style.borderColor = '';
+  el.style.boxShadow  = '';
+}
+
+function registrar() {
+  const campos = ['consultor','candidato','dataPagamento','linkConversa','observacoes','polo'];
+  let ok = true;
+  campos.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) {
+      el.style.borderColor = '#D93B3B';
+      el.style.boxShadow   = '0 0 0 3px rgba(217,59,59,.12)';
+      ok = false;
+    } else resetEstilo(id);
+  });
+
+  if (!ok) { toastMsg('⚠ Preencha todos os campos obrigatórios.', '#C97A00'); return; }
+
+  const dados = JSON.parse(localStorage.getItem(DADOS_KEY) || '[]');
+  const id = dados.length ? (Math.max(...dados.map(d => d.id || 0)) + 1) : 1;
+
+  dados.push({
+    id,
+    consultor:    document.getElementById('consultor').value,
+    candidato:    document.getElementById('candidato').value,
+    data:         document.getElementById('dataPagamento').value,
+    link:         document.getElementById('linkConversa').value,
+    obs:          document.getElementById('observacoes').value,
+    polo:         document.getElementById('polo').value,
+    registrado_em: new Date().toLocaleString('pt-BR'),
+  });
+
+  localStorage.setItem(DADOS_KEY, JSON.stringify(dados));
+  limpar();
+  toastMsg('✔ Matrícula registrada com sucesso!');
+}
+</script>
+</body>
+</html>
