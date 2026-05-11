@@ -65,7 +65,7 @@ header{
   font-size:.95rem;cursor:pointer;
 }
 
-.wrap{max-width:1140px;margin:0 auto;padding:28px 16px 60px}
+.wrap{max-width:1280px;margin:0 auto;padding:28px 16px 60px}
 
 .dash-top{
   display:flex;align-items:center;justify-content:space-between;
@@ -92,7 +92,6 @@ header{
 }
 .kpi.green{border-top-color:var(--verde)}
 .kpi.amber{border-top-color:#F5A623}
-.kpi.red{border-top-color:var(--vermelho)}
 .kpi-lbl{font-size:.75rem;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:.04em}
 .kpi-val{font-family:'Nunito',sans-serif;font-size:2rem;font-weight:800;color:var(--azul);line-height:1.1;margin-top:4px}
 .kpi.green .kpi-val{color:var(--verde)}
@@ -147,31 +146,6 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
 .pb:hover{background:var(--bg)}
 .pb.active{background:var(--azul);color:#fff;border-color:var(--azul)}
 
-.del-btn{
-  background:none;border:1px solid #FECACA;color:#E53E3E;
-  padding:4px 10px;border-radius:6px;cursor:pointer;
-  font-size:.78rem;font-weight:700;transition:all .15s;
-}
-.del-btn:hover{background:#FFF5F5;border-color:#E53E3E}
-
-.overlay{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.45);z-index:200;
-  align-items:center;justify-content:center;
-}
-.overlay.show{display:flex}
-.modal{
-  background:#fff;border-radius:var(--r);
-  padding:28px 32px;max-width:400px;width:90%;
-  box-shadow:0 12px 48px rgba(0,0,0,.18);
-}
-.modal h3{font-family:'Nunito',sans-serif;font-weight:800;color:var(--azul);margin-bottom:10px}
-.modal p{font-size:.9rem;color:var(--cinza);margin-bottom:20px}
-.modal-btns{display:flex;gap:10px;justify-content:flex-end}
-.btn-danger{background:var(--vermelho);color:#fff;padding:10px 22px}
-.btn-danger:hover{background:#B52E2E}
-.btn-cancel{background:var(--cinza-cl);color:var(--cinza);border:1.5px solid var(--borda);padding:10px 22px}
-
 .fonte-note{
   margin-top:12px;text-align:right;
   font-size:.75rem;color:var(--cinza);font-style:italic;
@@ -205,7 +179,7 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
       <div class="h-sub">Contacte Sales · Dashboard Aceleradores 52.2026</div>
     </div>
   </div>
-  <a href="formulario.html" class="nav-link">📋 Formulário</a>
+  <a href="index.html" class="nav-link">📋 Formulário</a>
 </header>
 
 <div class="wrap">
@@ -213,7 +187,7 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
   <div class="dash-top">
     <div>
       <div class="dash-title">📊 Painel de Matrículas</div>
-      <div class="dash-sub">Atualizado em: 11/05/2026 16:12</div>
+      <div class="dash-sub" id="subAtualizado">Carregando...</div>
     </div>
     <div class="actions">
       <button class="btn btn-outline" onclick="location.reload()">🔄 Atualizar</button>
@@ -244,9 +218,16 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
       <table>
         <thead>
           <tr>
-            <th>#</th><th>Consultor(a)</th><th>Nº Candidato</th>
-            <th>Data Pgto.</th><th>Polo</th><th>Observações</th>
-            <th>Link</th><th>Registrado Em</th><th></th>
+            <th>ID</th>
+            <th>Consultor(a)</th>
+            <th>Nº Candidato</th>
+            <th>Data Pagamento</th>
+            <th>Link da Conversa</th>
+            <th>Observações</th>
+            <th>Polo</th>
+            <th>Registrado Em</th>
+            <th>Tipo de Curso</th>
+            <th>Gestor</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -258,35 +239,39 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
 
 </div>
 
-<div class="overlay" id="modal">
-  <div class="modal">
-    <h3>Excluir registro?</h3>
-    <p>Esta ação não pode ser desfeita. O registro será removido permanentemente do navegador.</p>
-    <div class="modal-btns">
-      <button class="btn btn-cancel" onclick="fecharModal()">Cancelar</button>
-      <button class="btn btn-danger" onclick="confirmarExclusao()">Excluir</button>
-    </div>
-  </div>
-</div>
-
 <script>
-const DADOS_PYTHON = [];
-const DADOS_KEY    = 'unicesumar_aceleradores_v2';
-const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbxwQf_QC9_-AcjaEBj-aMOUvUfmYDMDpBviCxaNF270UkLKbd3TiWbcECvSnkTx82u4Lg/exec';
+const DADOS_KEY  = 'unicesumar_aceleradores_v2';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwQf_QC9_-AcjaEBj-aMOUvUfmYDMDpBviCxaNF270UkLKbd3TiWbcECvSnkTx82u4Lg/exec';
 
 let todosDados = [];
 let filtrados  = [];
 let pagAtual   = 1;
 const POR_PAG  = 15;
-let idExcluir  = null;
+
+// Normaliza um registro do Google Sheets para o formato interno
+function normalizarSheet(d) {
+  return {
+    id:           d['ID']              || d.id              || '',
+    consultor:    d['Consultor(a)']    || d.consultor       || '',
+    candidato:    d['Nº Candidato']    || d.candidato       || '',
+    data:         d['Data Pagamento']  || d.data            || '',
+    link:         d['Link da Conversa']|| d.link            || '',
+    obs:          d['Observações']     || d.obs             || '',
+    polo:         d['Polo']            || d.polo            || '',
+    registrado_em:d['Registrado Em']   || d.registrado_em   || '',
+    tipo_curso:   d['Tipo de Curso']   || d.tipo_curso      || '',
+    gestor:       d['Gestor']          || d.gestor          || '',
+  };
+}
 
 function carregarDados(dadosSheets) {
   const local = JSON.parse(localStorage.getItem(DADOS_KEY) || '[]');
-  // Merge: localStorage + Google Sheets, sem duplicar por id
-  const idsLocal = new Set(local.map(d => String(d.id)));
-  const extras   = (dadosSheets || []).filter(d => !idsLocal.has(String(d.id)));
+  // Normaliza registros do Sheets e mescla sem duplicar por ID
+  const sheetsNorm = (dadosSheets || []).map(normalizarSheet);
+  const idsLocal   = new Set(local.map(d => String(d.id)));
+  const extras     = sheetsNorm.filter(d => !idsLocal.has(String(d.id)));
   todosDados = [...local, ...extras];
-  todosDados.sort((a,b) => (b.id||0) - (a.id||0));
+  todosDados.sort((a,b) => (Number(b.id)||0) - (Number(a.id)||0));
 }
 
 function checkAuth() {
@@ -371,7 +356,7 @@ function renderTabela() {
   const pagina = filtrados.slice(inicio, inicio+POR_PAG);
 
   if (!filtrados.length) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty">
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty">
       <div class="empty-icon">📭</div>
       <p>Nenhum registro encontrado.</p>
       <small>Registros feitos pelo formulário aparecem aqui automaticamente.</small>
@@ -382,15 +367,16 @@ function renderTabela() {
 
   tbody.innerHTML = pagina.map((d,i) => `
     <tr>
-      <td><strong>#${d.id||inicio+i+1}</strong></td>
+      <td><strong>${d.id||inicio+i+1}</strong></td>
       <td>${d.consultor||'—'}</td>
       <td>${d.candidato||'—'}</td>
-      <td>${d.data ? formatarData(d.data) : '—'}</td>
-      <td>${d.polo||'—'}</td>
-      <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${d.obs||''}">${d.obs||'—'}</td>
+      <td style="white-space:nowrap">${d.data ? formatarData(d.data) : '—'}</td>
       <td class="link-cell">${d.link ? `<a href="${d.link}" target="_blank">🔗 Abrir</a>` : '—'}</td>
+      <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${(d.obs||'').replace(/"/g,'&quot;')}">${d.obs||'—'}</td>
+      <td>${d.polo||'—'}</td>
       <td style="white-space:nowrap">${d.registrado_em||'—'}</td>
-      <td><button class="del-btn" onclick="excluir(${d.id})">✕</button></td>
+      <td>${d.tipo_curso||'—'}</td>
+      <td>${d.gestor||'—'}</td>
     </tr>`).join('');
 
   renderPaginacao();
@@ -398,9 +384,19 @@ function renderTabela() {
 
 function formatarData(d) {
   if (!d) return '—';
-  if (d.includes('/')) return d;
-  const [y,m,dd] = d.split('-');
-  return `${dd}/${m}/${y}`;
+  // yyyy-mm-dd
+  if (/^\d{4}-\d{2}-\d{2}/.test(d)) {
+    const [y,m,dd] = d.slice(0,10).split('-');
+    return `${dd}/${m}/${y}`;
+  }
+  // dd/mm/yyyy
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(d)) return d.slice(0,10);
+  // Tenta parsear como data genérica
+  try {
+    const dt = new Date(d);
+    if (!isNaN(dt.getTime())) return dt.toLocaleDateString('pt-BR');
+  } catch(e) {}
+  return d;
 }
 
 function renderPaginacao() {
@@ -419,37 +415,32 @@ function renderPaginacao() {
   pag.innerHTML = html;
 }
 
-function irPag(p) { pagAtual=p; renderTabela(); window.scrollTo(0,document.querySelector('.table-card').offsetTop-80); }
-
-function excluir(id) { idExcluir=id; document.getElementById('modal').classList.add('show'); }
-function fecharModal() { document.getElementById('modal').classList.remove('show'); idExcluir=null; }
-function confirmarExclusao() {
-  const local = JSON.parse(localStorage.getItem(DADOS_KEY)||'[]');
-  const novo  = local.filter(d=>d.id!==idExcluir);
-  localStorage.setItem(DADOS_KEY, JSON.stringify(novo));
-  fecharModal();
-  init();
+function irPag(p) {
+  pagAtual = p;
+  renderTabela();
+  window.scrollTo(0, document.querySelector('.table-card').offsetTop - 80);
 }
 
 function exportarExcel() {
   if (!todosDados.length) { alert('Não há dados para exportar.'); return; }
   const rows = todosDados.map(d => ({
-    'ID':           d.id||'',
-    'Consultor(a)': d.consultor||'',
-    'Nº Candidato': d.candidato||'',
-    'Data Pagamento': d.data ? formatarData(d.data) : '',
-    'Polo':         d.polo||'',
-    'Observações':  d.obs||'',
-    'Link Conversa':d.link||'',
-    'Registrado Em':d.registrado_em||'',
+    'ID':              d.id||'',
+    'Consultor(a)':    d.consultor||'',
+    'Nº Candidato':    d.candidato||'',
+    'Data Pagamento':  d.data ? formatarData(d.data) : '',
+    'Link da Conversa':d.link||'',
+    'Observações':     d.obs||'',
+    'Polo':            d.polo||'',
+    'Registrado Em':   d.registrado_em||'',
+    'Tipo de Curso':   d.tipo_curso||'',
+    'Gestor':          d.gestor||'',
   }));
 
   const ws  = XLSX.utils.json_to_sheet(rows);
   const wb  = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Matrículas');
 
-  // Largura de colunas
-  ws['!cols'] = [{wch:6},{wch:38},{wch:16},{wch:16},{wch:44},{wch:40},{wch:40},{wch:20}];
+  ws['!cols'] = [{wch:6},{wch:38},{wch:16},{wch:16},{wch:40},{wch:40},{wch:44},{wch:22},{wch:20},{wch:36}];
 
   const now = new Date();
   const ts  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
@@ -463,111 +454,29 @@ function renderizarTudo(dadosSheets) {
   filtrados = [...todosDados];
   renderTabela();
 
-  const localCount  = JSON.parse(localStorage.getItem(DADOS_KEY)||'[]').length;
-  const sheetCount  = (dadosSheets||[]).length;
-  const nota        = document.getElementById('fonteNote');
-  nota.textContent  = `Dados: ${localCount} no navegador · ${sheetCount} do Google Sheets`;
+  const localCount = JSON.parse(localStorage.getItem(DADOS_KEY)||'[]').length;
+  const sheetCount = (dadosSheets||[]).length;
+  const agora      = new Date().toLocaleString('pt-BR');
+  document.getElementById('subAtualizado').textContent = `Atualizado em: ${agora}`;
+  document.getElementById('fonteNote').textContent =
+    `Dados: ${localCount} no navegador · ${sheetCount} do Google Sheets`;
 }
 
 function iniciarDashboard() {
-  const nota = document.getElementById('fonteNote');
-  nota.textContent = 'Carregando dados do Google Sheets…';
+  document.getElementById('subAtualizado').textContent = 'Carregando dados...';
+  document.getElementById('fonteNote').textContent = 'Carregando dados do Google Sheets…';
 
   fetch(SCRIPT_URL)
     .then(r => r.json())
     .then(res => renderizarTudo(res.dados || []))
-    .catch(() => renderizarTudo([])); // usa só localStorage se falhar
+    .catch(() => renderizarTudo([]));
 }
 
 function init() {
-  // Se veio pelo modal de senha ou já autenticado nessa sessão, abre direto
   if (sessionStorage.getItem('dash_auth') === '1') {
     document.getElementById('authOverlay').classList.remove('show');
     iniciarDashboard();
   } else {
-    // Aguarda autenticação — foca no campo de senha
-    setTimeout(() => document.getElementById('authInput').focus(), 200);
-  }
-}
-
-init();
-</script>
-</body>
-</html>pagAtual?' active':''}" onclick="irPag(${p})">${p}</button>`;
-    else if (Math.abs(p-pagAtual)===2)
-      html += `<span>…</span>`;
-  }
-  if (pagAtual < total) html += `<button class="pb" onclick="irPag(${pagAtual+1})">›</button>`;
-  pag.innerHTML = html;
-}
-
-function irPag(p) { pagAtual=p; renderTabela(); window.scrollTo(0,document.querySelector('.table-card').offsetTop-80); }
-
-function excluir(id) { idExcluir=id; document.getElementById('modal').classList.add('show'); }
-function fecharModal() { document.getElementById('modal').classList.remove('show'); idExcluir=null; }
-function confirmarExclusao() {
-  const local = JSON.parse(localStorage.getItem(DADOS_KEY)||'[]');
-  const novo  = local.filter(d=>d.id!==idExcluir);
-  localStorage.setItem(DADOS_KEY, JSON.stringify(novo));
-  fecharModal();
-  init();
-}
-
-function exportarExcel() {
-  if (!todosDados.length) { alert('Não há dados para exportar.'); return; }
-  const rows = todosDados.map(d => ({
-    'ID':           d.id||'',
-    'Consultor(a)': d.consultor||'',
-    'Nº Candidato': d.candidato||'',
-    'Data Pagamento': d.data ? formatarData(d.data) : '',
-    'Polo':         d.polo||'',
-    'Observações':  d.obs||'',
-    'Link Conversa':d.link||'',
-    'Registrado Em':d.registrado_em||'',
-  }));
-
-  const ws  = XLSX.utils.json_to_sheet(rows);
-  const wb  = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Matrículas');
-
-  // Largura de colunas
-  ws['!cols'] = [{wch:6},{wch:38},{wch:16},{wch:16},{wch:44},{wch:40},{wch:40},{wch:20}];
-
-  const now = new Date();
-  const ts  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-  XLSX.writeFile(wb, `matriculas_aceleradores_${ts}.xlsx`);
-}
-
-function renderizarTudo(dadosSheets) {
-  carregarDados(dadosSheets);
-  atualizarKPIs();
-  renderCharts();
-  filtrados = [...todosDados];
-  renderTabela();
-
-  const localCount  = JSON.parse(localStorage.getItem(DADOS_KEY)||'[]').length;
-  const sheetCount  = (dadosSheets||[]).length;
-  const nota        = document.getElementById('fonteNote');
-  nota.textContent  = `Dados: ${localCount} no navegador · ${sheetCount} do Google Sheets`;
-}
-
-function iniciarDashboard() {
-  const nota = document.getElementById('fonteNote');
-  nota.textContent = 'Carregando dados do Google Sheets…';
-
-  fetch(SCRIPT_URL)
-    .then(r => r.json())
-    .then(res => renderizarTudo(res.dados || []))
-    .catch(() => renderizarTudo([])); // usa só localStorage se falhar
-}
-
-function init() {
-  // Se veio pelo modal de senha ou já autenticado nessa sessão, abre direto
-  if (sessionStorage.getItem('dash_auth') === '1') {
-    document.getElementById('authOverlay').classList.remove('show');
-    iniciarDashboard();
-  } else {
-    // Aguarda autenticação — foca no campo de senha
     setTimeout(() => document.getElementById('authInput').focus(), 200);
   }
 }
@@ -576,12 +485,3 @@ init();
 </script>
 </body>
 </html>
-tInput').focus(), 200);
-  }
-}
-
-init();
-</script>
-</body>
-</html></body>
-</html>l>
