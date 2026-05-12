@@ -236,10 +236,10 @@ textarea.ctrl{resize:vertical;min-height:90px}
         <textarea class="ctrl" id="observacoes" placeholder="Observações relevantes sobre a matrícula..." required></textarea>
       </div>
 
-      <div class="group">
-        <label class="label"><span class="num">6</span> Polo <span class="req">*</span></label>
+      <div class="group" style="display:none">
+        <label class="label"><span class="num">6</span> Polo</label>
         <div class="sw">
-          <select class="ctrl" id="polo" required>
+          <select class="ctrl" id="polo">
             <option value="">Selecione o Polo</option>
           <option value="Abelardo Luz - SC">Abelardo Luz - SC</option>
           <option value="Abreu e Lima - PE">Abreu e Lima - PE</option>
@@ -564,7 +564,7 @@ function toastMsg(msg, cor='#1E9E62') {
 }
 
 function limpar() {
-  ['consultor','candidato','dataPagamento','linkConversa','observacoes','polo'].forEach(id => {
+  ['consultor','candidato','dataPagamento','linkConversa','observacoes'].forEach(id => {
     document.getElementById(id).value = '';
   });
 }
@@ -577,7 +577,7 @@ function registrar() {
   const observacoes   = document.getElementById('observacoes').value.trim();
   const polo          = document.getElementById('polo').value;
 
-  if (!consultor || !candidato || !dataPagamento || !linkConversa || !observacoes || !polo) {
+  if (!consultor || !candidato || !dataPagamento || !linkConversa || !observacoes) {
     toastMsg('⚠ Preencha todos os campos obrigatórios.', '#D93B3B');
     return;
   }
