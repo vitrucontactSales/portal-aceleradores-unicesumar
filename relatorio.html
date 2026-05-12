@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Relatório — UniCesumar Aceleradores</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --azul:#1A4E8C;--azul-m:#2466B0;--azul-c:#3B8DD4;
+  --bg:#E8F2FB;--borda:#D0DFF0;--cinza:#5B6474;
+  --cinza-cl:#F4F6FA;--verde:#1E9E62;--vermelho:#D93B3B;
+  --shadow:0 4px 24px rgba(26,78,140,.10);--r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);min-height:100vh}
+
+header{
+  background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 60%,var(--azul-c) 100%);
+  padding:0 32px;display:flex;align-items:center;
+  justify-content:space-between;height:68px;
+  box-shadow:0 2px 12px rgba(26,78,140,.18);
+  position:sticky;top:0;z-index:100;
+}
+.logo-area{display:flex;align-items:center;gap:14px}
+.logo-svg{width:40px;height:40px}
+.h-title{font-family:'Nunito',sans-serif;color:#fff;font-size:1.12rem;font-weight:800;line-height:1.2}
+.h-sub{color:rgba(255,255,255,.75);font-size:.78rem;font-weight:600}
+.nav-link{
+  color:rgba(255,255,255,.85);text-decoration:none;
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);
+  border-radius:8px;padding:7px 18px;
+  font-family:'Nunito',sans-serif;font-weight:700;font-size:.85rem;
+  transition:all .2s;white-space:nowrap;
+}
+.nav-link:hover{background:rgba(255,255,255,.25);color:#fff}
+
+.wrap{max-width:1100px;margin:0 auto;padding:32px 16px 60px}
+
+/* Seletor de consultor */
+.selector-card{
+  background:#fff;border-radius:var(--r);padding:32px 36px;
+  box-shadow:var(--shadow);margin-bottom:24px;
+  border-top:4px solid var(--azul-c);
+}
+.selector-card h2{
+  font-family:'Nunito',sans-serif;font-size:1.15rem;font-weight:800;
+  color:var(--azul);margin-bottom:6px;
+}
+.selector-card p{font-size:.85rem;color:var(--cinza);margin-bottom:20px}
+.selector-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.sel-wrap{flex:1;min-width:240px}
+.sel-label{font-size:.8rem;font-weight:700;color:var(--cinza);margin-bottom:6px;display:block}
+.sel-input{
+  width:100%;padding:11px 14px;border:1.5px solid var(--borda);
+  border-radius:9px;font-family:'Nunito Sans',sans-serif;font-size:.92rem;
+  background:#fff;color:#2D3748;appearance:none;cursor:pointer;
+}
+.sel-input:focus{outline:none;border-color:var(--azul-c)}
+
+.btn{
+  padding:11px 24px;border-radius:9px;font-family:'Nunito',sans-serif;
+  font-weight:800;font-size:.88rem;cursor:pointer;border:none;
+  transition:all .2s;display:flex;align-items:center;gap:7px;white-space:nowrap;
+}
+.btn-primary{background:linear-gradient(135deg,var(--azul),var(--azul-c));color:#fff;box-shadow:0 3px 12px rgba(26,78,140,.25)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(26,78,140,.35)}
+.btn-excel{background:linear-gradient(135deg,#1E6E3F,#28A745);color:#fff;box-shadow:0 3px 12px rgba(30,110,63,.25)}
+.btn-excel:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(30,110,63,.35)}
+.btn-outline{background:#fff;color:var(--azul);border:1.5px solid var(--azul)}
+.btn-outline:hover{background:var(--bg)}
+
+/* KPIs do consultor */
+.kpi-row{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.kpi{
+  background:#fff;border-radius:var(--r);padding:18px 24px;
+  box-shadow:var(--shadow);border-top:4px solid var(--azul-c);flex:1;min-width:140px;
+}
+.kpi.green{border-top-color:var(--verde)}
+.kpi-lbl{font-size:.72rem;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:.04em}
+.kpi-val{font-family:'Nunito',sans-serif;font-size:1.9rem;font-weight:800;color:var(--azul);margin-top:4px}
+.kpi.green .kpi-val{color:var(--verde)}
+
+/* Tabela */
+.table-card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.table-hd{
+  padding:16px 22px;display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1.5px solid var(--borda);
+  flex-wrap:wrap;gap:10px;
+}
+.table-hd h3{font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;color:var(--azul)}
+.search{
+  padding:8px 13px;border:1.5px solid var(--borda);border-radius:8px;
+  font-family:'Nunito Sans',sans-serif;font-size:.85rem;width:220px;
+  background:var(--cinza-cl);
+}
+.search:focus{outline:none;border-color:var(--azul-c)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+thead th{
+  background:var(--azul);color:#fff;padding:11px 14px;
+  text-align:left;font-family:'Nunito',sans-serif;
+  font-weight:700;font-size:.78rem;text-transform:uppercase;
+  letter-spacing:.04em;white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid #EDF2F7;transition:background .15s}
+tbody tr:hover{background:var(--bg)}
+tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
+.link-cell a{color:var(--azul-c);text-decoration:none;font-weight:700}
+.link-cell a:hover{text-decoration:underline}
+.empty{text-align:center;padding:52px 20px;color:var(--cinza)}
+.empty-icon{font-size:2.5rem;margin-bottom:10px}
+.empty p{font-family:'Nunito',sans-serif;font-weight:700;font-size:.95rem}
+.empty small{font-size:.82rem}
+
+.pag{
+  padding:12px 22px;display:flex;align-items:center;
+  gap:8px;justify-content:flex-end;
+  border-top:1.5px solid var(--borda);font-size:.82rem;color:var(--cinza);
+}
+.pb{
+  background:var(--cinza-cl);border:1px solid var(--borda);border-radius:6px;
+  padding:4px 10px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--azul);
+}
+.pb:hover{background:var(--bg)}
+.pb.active{background:var(--azul);color:#fff;border-color:var(--azul)}
+
+.fonte-note{
+  margin-top:12px;text-align:right;
+  font-size:.75rem;color:var(--cinza);font-style:italic;
+}
+
+/* Estado inicial: resultados ocultos */
+#resultados{display:none}
+.loading{text-align:center;padding:30px;color:var(--cinza);font-style:italic}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <svg class="logo-svg" viewBox="0 0 42 42" fill="none">
+      <path d="M8 8 Q8 34 21 34 Q34 34 34 8" stroke="white" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <circle cx="21" cy="14" r="5.5" fill="#60B8F0"/>
+      <path d="M13.5 14 Q13.5 22 21 22 Q28.5 22 28.5 14" stroke="rgba(255,255,255,.55)" stroke-width="3" fill="none"/>
+    </svg>
+    <div>
+      <div class="h-title">UniCesumar</div>
+      <div class="h-sub">Contacte Sales · Meu Relatório 52.2026</div>
+    </div>
+  </div>
+  <a href="index.html" class="nav-link">← Voltar ao Formulário</a>
+</header>
+
+<div class="wrap">
+
+  <!-- Seletor -->
+  <div class="selector-card">
+    <h2>👤 Selecione seu nome</h2>
+    <p>Escolha seu nome abaixo para visualizar suas matrículas registradas.</p>
+    <div class="selector-row">
+      <div class="sel-wrap">
+        <label class="sel-label" for="selConsultor">Consultor(a)</label>
+        <select class="sel-input" id="selConsultor">
+          <option value="">— Selecione seu nome —</option>
+          <option value="Alessandra Rosa Cabral">Alessandra Rosa Cabral</option>
+          <option value="Ana Karoline Cristo Ribeiro">Ana Karoline Cristo Ribeiro</option>
+          <option value="Andreia Ferreira De Oliveira">Andreia Ferreira De Oliveira</option>
+          <option value="Beatriz De Oliveira Xavier">Beatriz De Oliveira Xavier</option>
+          <option value="Beatriz Moreira De Maria">Beatriz Moreira De Maria</option>
+          <option value="Beatriz Shiki Portilho">Beatriz Shiki Portilho</option>
+          <option value="Caroline Silva Santos">Caroline Silva Santos</option>
+          <option value="Celia De Souza Lima">Celia De Souza Lima</option>
+          <option value="Edenilson Teodoro Junior">Edenilson Teodoro Junior</option>
+          <option value="Elaine Kubitz">Elaine Kubitz</option>
+          <option value="Erick Alexsander Do Santos">Erick Alexsander Do Santos</option>
+          <option value="Evelin Cristini Da Silva">Evelin Cristini Da Silva</option>
+          <option value="Fernanda Magioto">Fernanda Magioto</option>
+          <option value="Gabriel Candido Silva">Gabriel Candido Silva</option>
+          <option value="Gessica Da Cruz Barturi Luciano">Gessica Da Cruz Barturi Luciano</option>
+          <option value="Giovana Rossi">Giovana Rossi</option>
+          <option value="Giovanna Cadide Cabral">Giovanna Cadide Cabral</option>
+          <option value="Gislaine Angélica Rodrigues Silva">Gislaine Angélica Rodrigues Silva</option>
+          <option value="Gustavo Qualho Cazoni">Gustavo Qualho Cazoni</option>
+          <option value="Helen Almeida Maffioletti">Helen Almeida Maffioletti</option>
+          <option value="Henrique Caua Cupertino Navarro">Henrique Caua Cupertino Navarro</option>
+          <option value="Ingrid Kawane Ribeiro Moreira">Ingrid Kawane Ribeiro Moreira</option>
+          <option value="Isabela Cristina Melo Agostini">Isabela Cristina Melo Agostini</option>
+          <option value="Joselma Oliveira Jardim">Joselma Oliveira Jardim</option>
+          <option value="Joyce Andressa Da Silva Valentino">Joyce Andressa Da Silva Valentino</option>
+          <option value="Julia Caroline Da Silva Pessoa">Julia Caroline Da Silva Pessoa</option>
+          <option value="Julie Ndinga Zeferino Da Silva">Julie Ndinga Zeferino Da Silva</option>
+          <option value="Leandra Santos Lorenzetti">Leandra Santos Lorenzetti</option>
+          <option value="Leonardo Neves Dos Santos">Leonardo Neves Dos Santos</option>
+          <option value="Leonardo Salvalagio Gibin">Leonardo Salvalagio Gibin</option>
+          <option value="Luciana Simili Crecencio">Luciana Simili Crecencio</option>
+          <option value="Malu Amaral Kanda">Malu Amaral Kanda</option>
+          <option value="Marcos Vinícius Ferreira Fontes">Marcos Vinícius Ferreira Fontes</option>
+          <option value="Mariane Oliveira Dias">Mariane Oliveira Dias</option>
+          <option value="Neide Dagues Costa">Neide Dagues Costa</option>
+          <option value="Pedro Henrique Ribeiro Dos Santos">Pedro Henrique Ribeiro Dos Santos</option>
+          <option value="Sabrina Manoela Dos Santos Lima">Sabrina Manoela Dos Santos Lima</option>
+          <option value="Sabrina Soares Santos Guido">Sabrina Soares Santos Guido</option>
+          <option value="Sander Miguel Figueroa">Sander Miguel Figueroa</option>
+          <option value="Sandra Regina Braziel">Sandra Regina Braziel</option>
+          <option value="Sarah Da Silva Purnucena">Sarah Da Silva Purnucena</option>
+          <option value="Sthefanny Dayanne Da Silva Roberto">Sthefanny Dayanne Da Silva Roberto</option>
+          <option value="Talita Araujo Dos Santos">Talita Araujo Dos Santos</option>
+          <option value="Tauany Bezerra De Souza">Tauany Bezerra De Souza</option>
+          <option value="Thayssa Victoria Da Silva Pereira">Thayssa Victoria Da Silva Pereira</option>
+          <option value="Vanusa Silvino">Vanusa Silvino</option>
+          <option value="Victor Kendy Kozina">Victor Kendy Kozina</option>
+          <option value="Willyan Gabriel Lopes Moreira De Almeida">Willyan Gabriel Lopes Moreira De Almeida</option>
+          <option value="Yara Caleffi Costa">Yara Caleffi Costa</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="buscarRelatorio()">🔍 Ver minhas matrículas</button>
+    </div>
+  </div>
+
+  <!-- Resultados (oculto até buscar) -->
+  <div id="resultados">
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-lbl">Total de Matrículas</div><div class="kpi-val" id="kTotal">0</div></div>
+      <div class="kpi green"><div class="kpi-lbl">Registradas Hoje</div><div class="kpi-val" id="kHoje">0</div></div>
+      <div class="kpi"><div class="kpi-lbl">Esta Semana</div><div class="kpi-val" id="kSemana">0</div></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-hd">
+        <h3 id="tabelaTitulo">📋 Suas Matrículas</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input class="search" type="text" id="busca" placeholder="🔍 Buscar..." oninput="filtrar()">
+          <button class="btn btn-excel" onclick="exportarExcel()">📥 Exportar Excel</button>
+        </div>
+      </div>
+      <div id="loadingMsg" class="loading">Carregando dados...</div>
+      <div class="table-wrap" id="tableWrap" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nº Candidato</th>
+              <th>Data Pagamento</th>
+              <th>Link da Conversa</th>
+              <th>Observações</th>
+              <th>Polo</th>
+              <th>Registrado Em</th>
+              <th>Tipo de Curso</th>
+              <th>Gestor</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="pag" id="pag"></div>
+      <div class="fonte-note" id="fonteNote"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const DADOS_KEY  = 'unicesumar_aceleradores_v2';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwQf_QC9_-AcjaEBj-aMOUvUfmYDMDpBviCxaNF270UkLKbd3TiWbcECvSnkTx82u4Lg/exec';
+
+let meusRegistros = [];
+let filtrados     = [];
+let pagAtual      = 1;
+const POR_PAG     = 15;
+let consultorAtual = '';
+
+function normalizarSheet(d) {
+  return {
+    id:            d['ID']               || d.id              || '',
+    consultor:     d['Consultor(a)']     || d.consultor       || '',
+    candidato:     d['Nº Candidato']     || d.candidato       || '',
+    data:          d['Data Pagamento']   || d.data            || '',
+    link:          d['Link da Conversa'] || d.link            || '',
+    obs:           d['Observações']      || d.obs             || '',
+    polo:          d['Polo']             || d.polo            || '',
+    registrado_em: d['Registrado Em']    || d.registrado_em   || '',
+    tipo_curso:    d['Tipo de Curso']    || d.tipo_curso      || '',
+    gestor:        d['Gestor']           || d.gestor          || '',
+  };
+}
+
+function mesclaDados(dadosSheets) {
+  const local      = JSON.parse(localStorage.getItem(DADOS_KEY) || '[]');
+  const sheetsNorm = (dadosSheets || []).map(normalizarSheet);
+  const idsLocal   = new Set(local.map(d => String(d.id)));
+  const extras     = sheetsNorm.filter(d => !idsLocal.has(String(d.id)));
+  const todos      = [...local, ...extras];
+  // Filtra pelo consultor selecionado
+  return todos
+    .filter(d => (d.consultor||'').toLowerCase() === consultorAtual.toLowerCase())
+    .sort((a,b) => (Number(b.id)||0) - (Number(a.id)||0));
+}
+
+function buscarRelatorio() {
+  const sel = document.getElementById('selConsultor');
+  consultorAtual = sel.value;
+  if (!consultorAtual) {
+    alert('Por favor, selecione seu nome antes de continuar.');
+    return;
+  }
+
+  // Mostra área de resultados
+  document.getElementById('resultados').style.display = 'block';
+  document.getElementById('loadingMsg').style.display = 'block';
+  document.getElementById('tableWrap').style.display = 'none';
+  document.getElementById('tabelaTitulo').textContent = `📋 Matrículas de ${consultorAtual}`;
+
+  // Busca no Sheets
+  fetch(SCRIPT_URL)
+    .then(r => r.json())
+    .then(res => renderizar(res.dados || []))
+    .catch(() => renderizar([]));
+}
+
+function renderizar(dadosSheets) {
+  meusRegistros = mesclaDados(dadosSheets);
+  filtrados     = [...meusRegistros];
+  pagAtual      = 1;
+
+  // KPIs
+  const hoje   = new Date().toLocaleDateString('pt-BR');
+  const agora  = new Date();
+  const inicioSemana = new Date(agora);
+  inicioSemana.setDate(agora.getDate() - agora.getDay());
+
+  const countHoje   = meusRegistros.filter(d => {
+    try { return new Date(d.registrado_em).toLocaleDateString('pt-BR') === hoje; } catch{ return false; }
+  }).length;
+  const countSemana = meusRegistros.filter(d => {
+    try { return new Date(d.registrado_em) >= inicioSemana; } catch{ return false; }
+  }).length;
+
+  document.getElementById('kTotal').textContent  = meusRegistros.length;
+  document.getElementById('kHoje').textContent   = countHoje;
+  document.getElementById('kSemana').textContent = countSemana;
+
+  const localCount  = (JSON.parse(localStorage.getItem(DADOS_KEY)||'[]'))
+    .filter(d => (d.consultor||'').toLowerCase() === consultorAtual.toLowerCase()).length;
+  const sheetCount  = (dadosSheets||[])
+    .map(normalizarSheet)
+    .filter(d => (d.consultor||'').toLowerCase() === consultorAtual.toLowerCase()).length;
+
+  document.getElementById('fonteNote').textContent =
+    `Dados: ${localCount} no navegador · ${sheetCount} do Google Sheets · atualizado em ${new Date().toLocaleString('pt-BR')}`;
+
+  document.getElementById('loadingMsg').style.display = 'none';
+  document.getElementById('tableWrap').style.display  = 'block';
+
+  renderTabela();
+}
+
+function filtrar() {
+  const q = (document.getElementById('busca').value||'').toLowerCase();
+  filtrados = meusRegistros.filter(d =>
+    Object.values(d).some(v => String(v||'').toLowerCase().includes(q))
+  );
+  pagAtual = 1;
+  renderTabela();
+}
+
+function formatarDataHora(d) {
+  if (!d) return '—';
+  try {
+    const dt = new Date(d);
+    if (!isNaN(dt.getTime())) {
+      const dd  = String(dt.getDate()).padStart(2,'0');
+      const mm  = String(dt.getMonth()+1).padStart(2,'0');
+      const aaaa = dt.getFullYear();
+      const hh  = String(dt.getHours()).padStart(2,'0');
+      const min = String(dt.getMinutes()).padStart(2,'0');
+      return `${dd}/${mm}/${aaaa} ${hh}:${min}`;
+    }
+  } catch(e) {}
+  return d;
+}
+
+function formatarData(d) {
+  if (!d) return '—';
+  if (/^\d{4}-\d{2}-\d{2}/.test(d)) {
+    const [y,m,dd] = d.slice(0,10).split('-');
+    return `${dd}/${m}/${y}`;
+  }
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(d)) return d.slice(0,10);
+  try {
+    const dt = new Date(d);
+    if (!isNaN(dt.getTime())) return dt.toLocaleDateString('pt-BR');
+  } catch(e) {}
+  return d;
+}
+
+function renderTabela() {
+  const tbody  = document.getElementById('tbody');
+  const inicio = (pagAtual-1)*POR_PAG;
+  const pagina = filtrados.slice(inicio, inicio+POR_PAG);
+
+  if (!filtrados.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty">
+      <div class="empty-icon">📭</div>
+      <p>Nenhuma matrícula encontrada.</p>
+      <small>Seus registros feitos pelo formulário aparecem aqui.</small>
+    </div></td></tr>`;
+    document.getElementById('pag').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = pagina.map((d,i) => `
+    <tr>
+      <td><strong>${d.id||inicio+i+1}</strong></td>
+      <td>${d.candidato||'—'}</td>
+      <td style="white-space:nowrap">${d.data ? formatarData(d.data) : '—'}</td>
+      <td class="link-cell">${d.link ? `<a href="${d.link}" target="_blank">🔗 Abrir</a>` : '—'}</td>
+      <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${(d.obs||'').replace(/"/g,'&quot;')}">${d.obs||'—'}</td>
+      <td>${d.polo||'—'}</td>
+      <td style="white-space:nowrap">${formatarDataHora(d.registrado_em)}</td>
+      <td>${d.tipo_curso||'—'}</td>
+      <td>${d.gestor||'—'}</td>
+    </tr>`).join('');
+
+  renderPaginacao();
+}
+
+function renderPaginacao() {
+  const total = Math.ceil(filtrados.length/POR_PAG);
+  const pag   = document.getElementById('pag');
+  if (total <= 1) { pag.innerHTML=''; return; }
+  let html = `<span>${filtrados.length} registros</span>`;
+  if (pagAtual > 1) html += `<button class="pb" onclick="irPag(${pagAtual-1})">‹</button>`;
+  for (let p=1; p<=total; p++) {
+    if (p===1||p===total||Math.abs(p-pagAtual)<=1)
+      html += `<button class="pb${p===pagAtual?' active':''}" onclick="irPag(${p})">${p}</button>`;
+    else if (Math.abs(p-pagAtual)===2)
+      html += `<span>…</span>`;
+  }
+  if (pagAtual < total) html += `<button class="pb" onclick="irPag(${pagAtual+1})">›</button>`;
+  pag.innerHTML = html;
+}
+
+function irPag(p) {
+  pagAtual = p;
+  renderTabela();
+  window.scrollTo(0, document.querySelector('.table-card').offsetTop - 80);
+}
+
+function exportarExcel() {
+  if (!meusRegistros.length) { alert('Não há dados para exportar.'); return; }
+  const rows = meusRegistros.map(d => ({
+    'ID':              d.id||'',
+    'Consultor(a)':    consultorAtual,
+    'Nº Candidato':    d.candidato||'',
+    'Data Pagamento':  d.data ? formatarData(d.data) : '',
+    'Link da Conversa':d.link||'',
+    'Observações':     d.obs||'',
+    'Polo':            d.polo||'',
+    'Registrado Em':   d.registrado_em||'',
+    'Tipo de Curso':   d.tipo_curso||'',
+    'Gestor':          d.gestor||'',
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Minhas Matrículas');
+  ws['!cols'] = [{wch:6},{wch:36},{wch:16},{wch:16},{wch:40},{wch:40},{wch:44},{wch:22},{wch:20},{wch:36}];
+
+  const now = new Date();
+  const ts  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  const nome = consultorAtual.split(' ')[0].toLowerCase();
+  XLSX.writeFile(wb, `matriculas_${nome}_${ts}.xlsx`);
+}
+</script>
+</body>
+</html>
