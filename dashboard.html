@@ -6,6 +6,7 @@
 <title>Dashboard — UniCesumar Aceleradores</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
@@ -150,6 +151,19 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
   margin-top:12px;text-align:right;
   font-size:.75rem;color:var(--cinza);font-style:italic;
 }
+
+/* Barra de filtros global */
+.filter-bar{
+  background:#fff;border-radius:var(--r);box-shadow:var(--shadow);
+  padding:14px 20px;margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.filter-bar label{
+  font-size:.78rem;font-weight:700;color:var(--cinza);white-space:nowrap;
+}
+.filter-sep{
+  width:1px;height:28px;background:var(--borda);margin:0 4px;
+}
 </style>
 </head>
 <body>
@@ -197,22 +211,40 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
     </div>
   </div>
 
+  <!-- Barra de filtros global -->
+  <div class="filter-bar">
+    <label>De:</label>
+    <input type="date" id="filtroDataDe" class="search" style="width:140px" onchange="filtrar()">
+    <label>Até:</label>
+    <input type="date" id="filtroDataAte" class="search" style="width:140px" onchange="filtrar()">
+    <div class="filter-sep"></div>
+    <select id="filtroGestor" class="search" style="width:200px" onchange="filtrar()">
+      <option value="">👔 Todos os Gestores</option>
+    </select>
+    <div class="filter-sep"></div>
+    <input class="search" type="text" id="busca" placeholder="🔍 Buscar..." oninput="filtrar()" style="width:200px">
+    <button class="btn btn-outline" style="padding:7px 14px;font-size:.8rem" onclick="limparFiltros()">✕ Limpar</button>
+  </div>
+
   <div class="kpi-grid">
     <div class="kpi"><div class="kpi-lbl">Total de Registros</div><div class="kpi-val" id="kTotal">–</div></div>
     <div class="kpi green"><div class="kpi-lbl">Consultores Ativos</div><div class="kpi-val" id="kConsultores">–</div></div>
-    <div class="kpi amber"><div class="kpi-lbl">Polos Abrangidos</div><div class="kpi-val" id="kPolos">–</div></div>
+    <div class="kpi amber"><div class="kpi-lbl">Gestores</div><div class="kpi-val" id="kPolos">–</div></div>
     <div class="kpi"><div class="kpi-lbl">Registros Hoje</div><div class="kpi-val" id="kHoje">–</div></div>
   </div>
 
   <div class="charts-grid">
-    <div class="chart-card"><h3>🏆 Top 10 Consultores</h3><canvas id="cConsultor"></canvas></div>
-    <div class="chart-card"><h3>📍 Top 10 Polos</h3><canvas id="cPolo"></canvas></div>
+    <div class="chart-card">
+      <h3>🏆 Top 10 Consultores</h3>
+      <canvas id="cConsultor"></canvas>
+    </div>
+    <div class="chart-card"><h3>👔 Matrículas por Gestor</h3><canvas id="cGestor"></canvas></div>
   </div>
 
   <div class="table-card">
     <div class="table-hd">
       <h3>📋 Registros Detalhados</h3>
-      <input class="search" type="text" id="busca" placeholder="🔍 Buscar..." oninput="filtrar()">
+      <div id="contadorFiltro" style="font-size:.82rem;color:var(--cinza);font-weight:600"></div>
     </div>
     <div class="table-wrap">
       <table>
@@ -288,66 +320,140 @@ function checkAuth() {
   }
 }
 
-function contarHoje() {
+function atualizarKPIs(dados) {
   const hoje = new Date().toLocaleDateString('pt-BR');
-  return todosDados.filter(d => {
-    try {
-      const dt = new Date(d.registrado_em || '');
-      return dt.toLocaleDateString('pt-BR') === hoje;
-    } catch{ return false; }
+  const hojeCount = dados.filter(d => {
+    try { return new Date(d.registrado_em||'').toLocaleDateString('pt-BR') === hoje; }
+    catch { return false; }
   }).length;
+  document.getElementById('kTotal').textContent       = dados.length;
+  document.getElementById('kConsultores').textContent = new Set(dados.map(d=>d.consultor).filter(Boolean)).size;
+  document.getElementById('kPolos').textContent       = new Set(dados.map(d=>d.gestor).filter(Boolean)).size;
+  document.getElementById('kHoje').textContent        = hojeCount;
 }
 
-function atualizarKPIs() {
-  document.getElementById('kTotal').textContent       = todosDados.length;
-  document.getElementById('kConsultores').textContent = new Set(todosDados.map(d=>d.consultor).filter(Boolean)).size;
-  document.getElementById('kPolos').textContent       = new Set(todosDados.map(d=>d.polo).filter(Boolean)).size;
-  document.getElementById('kHoje').textContent        = contarHoje();
+function popularFiltroGestor() {
+  const gestores = [...new Set(todosDados.map(d=>d.gestor).filter(Boolean))].sort();
+  const sel = document.getElementById('filtroGestor');
+  sel.innerHTML = '<option value="">👔 Todos os Gestores</option>';
+  gestores.forEach(g => {
+    const o = document.createElement('option');
+    o.value = g; o.textContent = g;
+    sel.appendChild(o);
+  });
 }
 
-function top10(campo) {
+function top10(campo, dados) {
   const cnt = {};
-  todosDados.forEach(d => { if(d[campo]) cnt[d[campo]] = (cnt[d[campo]]||0)+1; });
+  (dados || todosDados).forEach(d => { if(d[campo]) cnt[d[campo]] = (cnt[d[campo]]||0)+1; });
   return Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,10);
 }
 
-let chartC = null, chartP = null;
+let chartC = null, chartG = null;
 
-function renderCharts() {
+function renderCharts(dados) {
   const cores = ['#1A4E8C','#2466B0','#3B8DD4','#5BA4E4','#7EC0F0',
                  '#2D7A4F','#3DAA6B','#F5A623','#E8722A','#D93B3B'];
-  const t10c = top10('consultor');
-  const t10p = top10('polo');
+  const top10C   = top10('consultor', dados);
+  const tGestor  = top10('gestor', dados);
 
   if(chartC) chartC.destroy();
-  if(chartP) chartP.destroy();
+  if(chartG) chartG.destroy();
 
+  // Gráfico horizontal — top 10 consultores
   chartC = new Chart(document.getElementById('cConsultor'), {
-    type:'bar',
-    data:{
-      labels: t10c.map(([k])=>k.split(' ')[0]+' '+k.split(' ').slice(-1)[0]),
-      datasets:[{ data:t10c.map(([,v])=>v), backgroundColor:cores, borderRadius:6 }]
+    type: 'bar',
+    data: {
+      labels: top10C.map(([k]) => k),
+      datasets: [{ data: top10C.map(([,v]) => v), backgroundColor: '#2466B0', borderRadius: 4 }]
     },
-    options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1}}} }
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          color: '#1A4E8C',
+          font: { weight: 'bold', size: 11 },
+          formatter: v => v
+        }
+      },
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1 } },
+        y: { ticks: { font: { size: 11 } } }
+      },
+      layout: { padding: { right: 30 } }
+    },
+    plugins: [ChartDataLabels]
   });
 
-  chartP = new Chart(document.getElementById('cPolo'), {
-    type:'bar',
-    data:{
-      labels: t10p.map(([k])=>k.split(' - ')[0]),
-      datasets:[{ data:t10p.map(([,v])=>v), backgroundColor:cores, borderRadius:6 }]
+  // Gráfico vertical — por gestor
+  chartG = new Chart(document.getElementById('cGestor'), {
+    type: 'bar',
+    data: {
+      labels: tGestor.map(([k]) => k.split(' ')[0] + ' ' + k.split(' ').slice(-1)[0]),
+      datasets: [{ data: tGestor.map(([,v]) => v), backgroundColor: cores, borderRadius: 6 }]
     },
-    options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1}}} }
+    options: {
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          color: '#1A4E8C',
+          font: { weight: 'bold', size: 12 },
+          formatter: v => v
+        }
+      },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+      layout: { padding: { top: 20 } }
+    },
+    plugins: [ChartDataLabels]
   });
 }
 
 function filtrar() {
-  const q = (document.getElementById('busca').value||'').toLowerCase();
-  filtrados = todosDados.filter(d =>
-    Object.values(d).some(v => String(v||'').toLowerCase().includes(q))
-  );
+  const q       = (document.getElementById('busca').value||'').toLowerCase();
+  const gestor  = document.getElementById('filtroGestor').value;
+  const dataDe  = document.getElementById('filtroDataDe').value;
+  const dataAte = document.getElementById('filtroDataAte').value;
+
+  filtrados = todosDados.filter(d => {
+    if (q && !Object.values(d).some(v => String(v||'').toLowerCase().includes(q))) return false;
+    if (gestor && d.gestor !== gestor) return false;
+    if (dataDe || dataAte) {
+      const dt = new Date(d.registrado_em);
+      if (!isNaN(dt)) {
+        const iso = dt.toISOString().slice(0,10);
+        if (dataDe && iso < dataDe) return false;
+        if (dataAte && iso > dataAte) return false;
+      }
+    }
+    return true;
+  });
+
   pagAtual = 1;
+  // Atualiza tudo com os dados filtrados
+  atualizarKPIs(filtrados);
+  renderCharts(filtrados);
   renderTabela();
+
+  // Contador de filtro
+  const contador = document.getElementById('contadorFiltro');
+  const temFiltro = q || gestor || dataDe || dataAte;
+  contador.textContent = temFiltro
+    ? `${filtrados.length} de ${todosDados.length} registros`
+    : '';
+}
+
+function limparFiltros() {
+  document.getElementById('busca').value = '';
+  document.getElementById('filtroGestor').value = '';
+  document.getElementById('filtroDataDe').value = '';
+  document.getElementById('filtroDataAte').value = '';
+  filtrar();
 }
 
 function renderTabela() {
@@ -465,9 +571,10 @@ function exportarExcel() {
 
 function renderizarTudo(dadosSheets) {
   carregarDados(dadosSheets);
-  atualizarKPIs();
-  renderCharts();
   filtrados = [...todosDados];
+  popularFiltroGestor();
+  atualizarKPIs(filtrados);
+  renderCharts(filtrados);
   renderTabela();
 
   const localCount = JSON.parse(localStorage.getItem(DADOS_KEY)||'[]').length;
