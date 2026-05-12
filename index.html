@@ -146,7 +146,10 @@ textarea.ctrl{resize:vertical;min-height:90px}
       <div class="h-sub">Contacte Sales · Aceleradores 52.2026</div>
     </div>
   </div>
-  <button onclick="abrirDashboard()" class="nav-link" style="cursor:pointer">📊 Dashboard</button>
+  <div style="display:flex;gap:10px">
+    <a href="relatorio.html" class="nav-link">📋 Meu Relatório</a>
+    <button onclick="abrirDashboard()" class="nav-link" style="cursor:pointer">📊 Dashboard</button>
+  </div>
 </header>
 
 <div class="wrapper">
@@ -195,6 +198,7 @@ textarea.ctrl{resize:vertical;min-height:90px}
           <option value="Leonardo Neves Dos Santos">Leonardo Neves Dos Santos</option>
           <option value="Leonardo Salvalagio Gibin">Leonardo Salvalagio Gibin</option>
           <option value="Luciana Simili Crecencio">Luciana Simili Crecencio</option>
+          <option value="Malu Amaral Kanda">Malu Amaral Kanda</option>
           <option value="Marcos Vinícius Ferreira Fontes">Marcos Vinícius Ferreira Fontes</option>
           <option value="Mariane Oliveira Dias">Mariane Oliveira Dias</option>
           <option value="Neide Dagues Costa">Neide Dagues Costa</option>
@@ -234,6 +238,19 @@ textarea.ctrl{resize:vertical;min-height:90px}
       <div class="group">
         <label class="label"><span class="num">5</span> Observações <span class="req">*</span></label>
         <textarea class="ctrl" id="observacoes" placeholder="Observações relevantes sobre a matrícula..." required></textarea>
+      </div>
+
+      <div class="group">
+        <label class="label"><span class="num">6</span> Tipo de Curso <span class="req">*</span></label>
+        <div class="sw">
+          <select class="ctrl" id="tipoCurso" required>
+            <option value="">Selecione o Tipo de Curso</option>
+            <option value="Graduação">Graduação</option>
+            <option value="Pós-Graduação">Pós-Graduação</option>
+            <option value="Ed. Continuada">Ed. Continuada</option>
+            <option value="Técnico">Técnico</option>
+          </select>
+        </div>
       </div>
 
       <div class="group" style="display:none">
@@ -564,7 +581,7 @@ function toastMsg(msg, cor='#1E9E62') {
 }
 
 function limpar() {
-  ['consultor','candidato','dataPagamento','linkConversa','observacoes'].forEach(id => {
+  ['consultor','candidato','dataPagamento','linkConversa','observacoes','tipoCurso'].forEach(id => {
     document.getElementById(id).value = '';
   });
 }
@@ -575,9 +592,10 @@ function registrar() {
   const dataPagamento = document.getElementById('dataPagamento').value;
   const linkConversa  = document.getElementById('linkConversa').value.trim();
   const observacoes   = document.getElementById('observacoes').value.trim();
+  const tipoCurso     = document.getElementById('tipoCurso').value;
   const polo          = document.getElementById('polo').value;
 
-  if (!consultor || !candidato || !dataPagamento || !linkConversa || !observacoes) {
+  if (!consultor || !candidato || !dataPagamento || !linkConversa || !observacoes || !tipoCurso) {
     toastMsg('⚠ Preencha todos os campos obrigatórios.', '#D93B3B');
     return;
   }
@@ -593,7 +611,7 @@ function registrar() {
     obs: observacoes,
     polo,
     registrado_em: agora,
-    tipo_curso: '',
+    tipo_curso: tipoCurso,
     gestor: ''
   });
   localStorage.setItem(DADOS_KEY, JSON.stringify(dados));
