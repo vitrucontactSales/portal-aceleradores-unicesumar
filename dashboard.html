@@ -374,12 +374,28 @@ function renderTabela() {
       <td class="link-cell">${d.link ? `<a href="${d.link}" target="_blank">🔗 Abrir</a>` : '—'}</td>
       <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${(d.obs||'').replace(/"/g,'&quot;')}">${d.obs||'—'}</td>
       <td>${d.polo||'—'}</td>
-      <td style="white-space:nowrap">${d.registrado_em||'—'}</td>
+      <td style="white-space:nowrap">${formatarDataHora(d.registrado_em)}</td>
       <td>${d.tipo_curso||'—'}</td>
       <td>${d.gestor||'—'}</td>
     </tr>`).join('');
 
   renderPaginacao();
+}
+
+function formatarDataHora(d) {
+  if (!d) return '—';
+  try {
+    const dt = new Date(d);
+    if (!isNaN(dt.getTime())) {
+      const dd  = String(dt.getDate()).padStart(2,'0');
+      const mm  = String(dt.getMonth()+1).padStart(2,'0');
+      const aaaa = dt.getFullYear();
+      const hh  = String(dt.getHours()).padStart(2,'0');
+      const min = String(dt.getMinutes()).padStart(2,'0');
+      return `${dd}/${mm}/${aaaa} ${hh}:${min}`;
+    }
+  } catch(e) {}
+  return d;
 }
 
 function formatarData(d) {
