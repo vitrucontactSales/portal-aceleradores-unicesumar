@@ -222,7 +222,13 @@ textarea.ctrl{resize:vertical;min-height:90px}
 
       <div class="group">
         <label class="label"><span class="num">2</span> Número de Candidato <span class="req">*</span></label>
-        <input class="ctrl" type="text" id="candidato" placeholder="Ex.: 123456" required>
+        <input class="ctrl" type="text" id="candidato" placeholder="Ex.: 202612345678"
+               inputmode="numeric" maxlength="20"
+               oninput="validarCandidato(this)"
+               required>
+        <div class="field-hint" id="hintCandidato" style="display:none;margin-top:6px;font-size:.8rem;color:var(--vermelho);font-weight:600">
+          ⚠ O número do candidato deve começar com <strong>2026</strong>. Verifique o campo — não utilize CPF.
+        </div>
       </div>
 
       <div class="group">
@@ -236,8 +242,8 @@ textarea.ctrl{resize:vertical;min-height:90px}
       </div>
 
       <div class="group">
-        <label class="label"><span class="num">5</span> Observações <span class="req">*</span></label>
-        <textarea class="ctrl" id="observacoes" placeholder="Observações relevantes sobre a matrícula..." required></textarea>
+        <label class="label"><span class="num">5</span> Observações</label>
+        <textarea class="ctrl" id="observacoes" placeholder="Observações relevantes sobre a matrícula..."></textarea>
       </div>
 
       <div class="group">
@@ -249,6 +255,19 @@ textarea.ctrl{resize:vertical;min-height:90px}
             <option value="Pós-Graduação">Pós-Graduação</option>
             <option value="Ed. Continuada">Ed. Continuada</option>
             <option value="Técnico">Técnico</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="group">
+        <label class="label"><span class="num">7</span> Gestor(a) <span class="req">*</span></label>
+        <div class="sw">
+          <select class="ctrl" id="gestor" required>
+            <option value="">Selecione o(a) Gestor(a)</option>
+            <option value="Claudenice Maria Sales Ribeiro Barros">Claudenice Maria Sales Ribeiro Barros</option>
+            <option value="Clayton Santos">Clayton Santos</option>
+            <option value="Jhonatan Dias">Jhonatan Dias</option>
+            <option value="Rafael Pereira">Rafael Pereira</option>
           </select>
         </div>
       </div>
@@ -580,8 +599,20 @@ function toastMsg(msg, cor='#1E9E62') {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
+function validarCandidato(el) {
+  const hint = document.getElementById('hintCandidato');
+  const val  = el.value.trim();
+  if (val.length > 0 && !val.startsWith('2026')) {
+    el.style.borderColor = 'var(--vermelho)';
+    hint.style.display = 'block';
+  } else {
+    el.style.borderColor = '';
+    hint.style.display = 'none';
+  }
+}
+
 function limpar() {
-  ['consultor','candidato','dataPagamento','linkConversa','observacoes','tipoCurso'].forEach(id => {
+  ['consultor','candidato','dataPagamento','linkConversa','observacoes','tipoCurso','gestor'].forEach(id => {
     document.getElementById(id).value = '';
   });
 }
@@ -594,9 +625,18 @@ function registrar() {
   const observacoes   = document.getElementById('observacoes').value.trim();
   const tipoCurso     = document.getElementById('tipoCurso').value;
   const polo          = document.getElementById('polo').value;
+  const gestor        = document.getElementById('gestor').value;
 
-  if (!consultor || !candidato || !dataPagamento || !linkConversa || !observacoes || !tipoCurso) {
+  if (!consultor || !candidato || !dataPagamento || !linkConversa || !tipoCurso || !gestor) {
     toastMsg('⚠ Preencha todos os campos obrigatórios.', '#D93B3B');
+    return;
+  }
+
+  // Valida número do candidato — deve começar com 2026
+  if (!candidato.startsWith('2026')) {
+    toastMsg('⚠ Número do candidato inválido. Deve começar com 2026.', '#D93B3B');
+    document.getElementById('candidato').focus();
+    document.getElementById('hintCandidato').style.display = 'block';
     return;
   }
 
@@ -612,7 +652,7 @@ function registrar() {
     polo,
     registrado_em: agora,
     tipo_curso: tipoCurso,
-    gestor: ''
+    gestor
   });
   localStorage.setItem(DADOS_KEY, JSON.stringify(dados));
 
