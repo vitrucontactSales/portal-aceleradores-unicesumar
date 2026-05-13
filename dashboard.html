@@ -235,8 +235,8 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
 
   <div class="charts-grid">
     <div class="chart-card">
-      <h3>🏆 Top 10 Consultores</h3>
-      <canvas id="cConsultor"></canvas>
+      <h3>🏆 Matrículas por Consultor</h3>
+      <div id="cConsultorOuter" style="height:380px;overflow-y:auto;overflow-x:hidden;"></div>
     </div>
     <div class="chart-card"><h3>👔 Matrículas por Gestor</h3><canvas id="cGestor"></canvas></div>
   </div>
@@ -280,6 +280,17 @@ let filtrados  = [];
 let pagAtual   = 1;
 const POR_PAG  = 15;
 
+// Normaliza nome do gestor — unifica variações para o nome canônico
+function normalizarGestor(nome) {
+  if (!nome) return '';
+  const n = nome.trim().toUpperCase();
+  if (n.includes('CLAUDENICE'))              return 'Claudenice Maria Sales Ribeiro Barros';
+  if (n.includes('CLAYTON'))                 return 'Clayton Santos';
+  if (n.includes('JHONATAN') || n.includes('JONATAN')) return 'Jhonatan Dias';
+  if (n.includes('RAFAEL'))                  return 'Rafael Pereira';
+  return nome.trim();
+}
+
 // Normaliza um registro do Google Sheets para o formato interno
 function normalizarSheet(d) {
   return {
@@ -292,17 +303,19 @@ function normalizarSheet(d) {
     polo:         d['Polo']            || d.polo            || '',
     registrado_em:d['Registrado Em']   || d.registrado_em   || '',
     tipo_curso:   d['Tipo de Curso']   || d.tipo_curso      || '',
-    gestor:       d['Gestor']          || d.gestor          || '',
+    gestor:       normalizarGestor(d['Gestor'] || d.gestor  || ''),
   };
 }
 
 function carregarDados(dadosSheets) {
   const local = JSON.parse(localStorage.getItem(DADOS_KEY) || '[]');
+  // Normaliza gestor também nos dados locais (registros antigos podem ter nome diferente)
+  const localNorm  = local.map(d => ({...d, gestor: normalizarGestor(d.gestor)}));
   // Normaliza registros do Sheets e mescla sem duplicar por ID
   const sheetsNorm = (dadosSheets || []).map(normalizarSheet);
-  const idsLocal   = new Set(local.map(d => String(d.id)));
+  const idsLocal   = new Set(localNorm.map(d => String(d.id)));
   const extras     = sheetsNorm.filter(d => !idsLocal.has(String(d.id)));
-  todosDados = [...local, ...extras];
+  todosDados = [...localNorm, ...extras];
   todosDados.sort((a,b) => (Number(b.id)||0) - (Number(a.id)||0));
 }
 
@@ -357,43 +370,44 @@ function renderCharts(dados) {
   const top10C   = top10('consultor', dados);
   const tGestor  = top10('gestor', dados);
 
-  if(chartC) chartC.destroy();
+  if(chartC) { chartC.destroy(); chartC = null; }
   if(chartG) chartG.destroy();
 
-  // Gráfico horizontal — top 10 consultores
-  chartC = new Chart(document.getElementById('cConsultor'), {
-    type: 'bar',
-    data: {
-      labels: top10C.map(([k]) => k),
-      datasets: [{ data: top10C.map(([,v]) => v), backgroundColor: '#2466B0', borderRadius: 4 }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        datalabels: {
-          anchor: 'end',
-          align: 'end',
-          color: '#1A4E8C',
-          font: { weight: 'bold', size: 11 },
-          formatter: v => v
-        }
-      },
-      scales: {
-        x: { beginAtZero: true, ticks: { stepSize: 1 } },
-        y: { ticks: { font: { size: 11 } } }
-      },
-      layout: { padding: { right: 30 } }
-    },
-    plugins: [ChartDataLabels]
-  });
+  // ── Gráfico de consultores: HTML puro (Chart.js não funciona bem com scroll) ──
+  const cntC = {};
+  (dados || todosDados).forEach(d => { if(d.consultor) cntC[d.consultor] = (cntC[d.consultor]||0)+1; });
+  const todosC = Object.entries(cntC).sort((a,b) => b[1]-a[1]);
+  const maxVal = todosC.length ? todosC[0][1] : 1;
+
+  const outer = document.getElementById('cConsultorOuter');
+  outer.style.padding = '6px 2px';
+
+  if (!todosC.length) {
+    outer.innerHTML = '<div style="text-align:center;padding:60px 0;color:#5B6474;font-size:.85rem">Sem dados</div>';
+  } else {
+    outer.innerHTML = todosC.map(([nome, val], i) => {
+      const pct   = ((val / maxVal) * 78).toFixed(1);  // máx 78% → sobra espaço pro rótulo
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+      return `
+        <div style="display:flex;align-items:center;gap:8px;padding:2px 8px;height:28px;">
+          <div style="width:9px;font-size:9px;color:#aaa;flex-shrink:0;text-align:right">${i+1}</div>
+          <div style="width:158px;font-size:11px;text-align:right;white-space:nowrap;
+                      overflow:hidden;text-overflow:ellipsis;color:#2D3748;flex-shrink:0;"
+               title="${nome}">${medal} ${nome}</div>
+          <div style="flex:1;background:#EDF2F7;border-radius:4px;height:14px;position:relative;min-width:0;">
+            <div style="width:${pct}%;background:#2466B0;height:100%;border-radius:4px;
+                        transition:width .4s ease;min-width:2px;"></div>
+          </div>
+          <div style="width:26px;font-size:11px;font-weight:800;color:#1A4E8C;flex-shrink:0;">${val}</div>
+        </div>`;
+    }).join('');
+  }
 
   // Gráfico vertical — por gestor
   chartG = new Chart(document.getElementById('cGestor'), {
     type: 'bar',
     data: {
-      labels: tGestor.map(([k]) => k.split(' ')[0] + ' ' + k.split(' ').slice(-1)[0]),
+      labels: tGestor.map(([k]) => k.split(' ')[0]),
       datasets: [{ data: tGestor.map(([,v]) => v), backgroundColor: cores, borderRadius: 6 }]
     },
     options: {
