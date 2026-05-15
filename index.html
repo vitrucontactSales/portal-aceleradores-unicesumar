@@ -130,6 +130,22 @@ textarea.ctrl{resize:vertical;min-height:90px}
 .modal-input:focus{outline:none;border-color:var(--azul-c)}
 .modal-erro{color:var(--vermelho);font-size:.8rem;margin-bottom:10px;display:none}
 .modal-btns{display:flex;gap:10px;justify-content:flex-end}
+
+/* Autocomplete Polo */
+.polo-wrap{position:relative}
+.polo-dropdown{
+  display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
+  background:#fff;border:1.5px solid var(--azul-c);border-radius:10px;
+  max-height:220px;overflow-y:auto;z-index:200;
+  box-shadow:0 6px 24px rgba(26,78,140,.15);
+}
+.polo-item{
+  padding:10px 16px;cursor:pointer;font-size:.88rem;color:#2D3748;
+  border-bottom:1px solid #EDF2F7;transition:background .12s;
+}
+.polo-item:last-child{border-bottom:none}
+.polo-item:hover,.polo-item.ativo{background:var(--bg);color:var(--azul);font-weight:700}
+.polo-nenhum{padding:12px 16px;font-size:.85rem;color:var(--cinza);text-align:center}
 </style>
 </head>
 <body>
@@ -275,10 +291,20 @@ textarea.ctrl{resize:vertical;min-height:90px}
         </div>
       </div>
 
-      <div class="group" style="display:none">
-        <label class="label"><span class="num">6</span> Polo</label>
-        <div class="sw">
-          <select class="ctrl" id="polo">
+      <div class="group">
+        <label class="label"><span class="num">8</span> Polo <span class="req">*</span></label>
+        <div class="sw polo-wrap">
+          <input class="ctrl" type="text" id="poloBusca"
+                 placeholder="Digite o nome da cidade ou polo..."
+                 autocomplete="off"
+                 oninput="filtrarPolo()"
+                 onfocus="abrirPoloDropdown()"
+                 onkeydown="navPoloTeclado(event)">
+          <div class="polo-dropdown" id="poloDropdown"></div>
+        </div>
+        <!-- Select oculto — fonte de dados e valor submetido -->
+        <div style="display:none">
+          <select id="polo">
             <option value="">Selecione o Polo</option>
           <option value="Abelardo Luz - SC">Abelardo Luz - SC</option>
           <option value="Abreu e Lima - PE">Abreu e Lima - PE</option>
@@ -563,6 +589,9 @@ textarea.ctrl{resize:vertical;min-height:90px}
           <option value="Álvares Machado - SP">Álvares Machado - SP</option>
           </select>
         </div>
+        <div class="field-hint" id="hintPolo" style="display:none;margin-top:6px;font-size:.8rem;color:var(--vermelho);font-weight:600">
+          ⚠ Selecione um polo válido da lista.
+        </div>
       </div>
 
     </div>
@@ -602,6 +631,79 @@ function toastMsg(msg, cor='#1E9E62') {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
+// ── Autocomplete Polo ─────────────────────────────────────────
+let _poloSelecionado = '';   // valor confirmado pelo usuário
+let _poloIdxAtivo    = -1;   // índice do item em foco pelo teclado
+
+function _getPolos() {
+  return Array.from(document.querySelectorAll('#polo option'))
+              .map(o => o.value).filter(v => v);
+}
+
+function filtrarPolo() {
+  const q   = document.getElementById('poloBusca').value.trim().toLowerCase();
+  const dd  = document.getElementById('poloDropdown');
+  _poloSelecionado = '';        // reseta seleção ao digitar
+  _poloIdxAtivo    = -1;
+  document.getElementById('polo').value = '';
+
+  if (!q) { dd.style.display = 'none'; dd.innerHTML = ''; return; }
+
+  const matches = _getPolos().filter(p => p.toLowerCase().includes(q)).slice(0, 30);
+  if (!matches.length) {
+    dd.innerHTML = '<div class="polo-nenhum">Nenhum polo encontrado</div>';
+  } else {
+    dd.innerHTML = matches.map((p, i) =>
+      `<div class="polo-item" data-val="${p}"
+            onmousedown="selecionarPolo('${p.replace(/'/g,"&#39;")}')">${p}</div>`
+    ).join('');
+  }
+  dd.style.display = 'block';
+}
+
+function abrirPoloDropdown() {
+  const q = document.getElementById('poloBusca').value.trim();
+  if (q) filtrarPolo();
+}
+
+function selecionarPolo(valor) {
+  _poloSelecionado = valor;
+  document.getElementById('poloBusca').value = valor;
+  document.getElementById('polo').value      = valor;
+  document.getElementById('poloDropdown').style.display = 'none';
+  document.getElementById('hintPolo').style.display = 'none';
+  document.getElementById('poloBusca').style.borderColor = '';
+}
+
+function navPoloTeclado(e) {
+  const dd    = document.getElementById('poloDropdown');
+  const items = dd.querySelectorAll('.polo-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    _poloIdxAtivo = Math.min(_poloIdxAtivo + 1, items.length - 1);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    _poloIdxAtivo = Math.max(_poloIdxAtivo - 1, 0);
+  } else if (e.key === 'Enter' && _poloIdxAtivo >= 0) {
+    e.preventDefault();
+    selecionarPolo(items[_poloIdxAtivo].dataset.val);
+    return;
+  } else if (e.key === 'Escape') {
+    dd.style.display = 'none'; return;
+  } else { return; }
+  items.forEach((el, i) => el.classList.toggle('ativo', i === _poloIdxAtivo));
+  items[_poloIdxAtivo]?.scrollIntoView({ block: 'nearest' });
+}
+
+// Fecha o dropdown ao clicar fora
+document.addEventListener('click', e => {
+  if (!e.target.closest('.polo-wrap')) {
+    document.getElementById('poloDropdown').style.display = 'none';
+  }
+});
+// ──────────────────────────────────────────────────────────────
+
 function validarCandidato(el) {
   const hint = document.getElementById('hintCandidato');
   const val  = el.value.trim();
@@ -615,9 +717,13 @@ function validarCandidato(el) {
 }
 
 function limpar() {
-  ['consultor','candidato','dataPagamento','linkConversa','observacoes','tipoCurso','gestor'].forEach(id => {
+  ['consultor','candidato','dataPagamento','linkConversa','observacoes','tipoCurso','gestor','polo'].forEach(id => {
     document.getElementById(id).value = '';
   });
+  document.getElementById('poloBusca').value = '';
+  _poloSelecionado = '';
+  document.getElementById('hintPolo').style.display = 'none';
+  document.getElementById('poloBusca').style.borderColor = '';
 }
 
 function registrar() {
@@ -632,6 +738,15 @@ function registrar() {
 
   if (!consultor || !candidato || !dataPagamento || !linkConversa || !tipoCurso || !gestor) {
     toastMsg('⚠ Preencha todos os campos obrigatórios.', '#D93B3B');
+    return;
+  }
+
+  // Valida se o polo foi selecionado da lista (não apenas digitado)
+  if (!polo) {
+    toastMsg('⚠ Selecione um Polo válido da lista.', '#D93B3B');
+    document.getElementById('poloBusca').style.borderColor = 'var(--vermelho)';
+    document.getElementById('hintPolo').style.display = 'block';
+    document.getElementById('poloBusca').focus();
     return;
   }
 
