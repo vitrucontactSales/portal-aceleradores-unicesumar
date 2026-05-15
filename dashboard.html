@@ -238,7 +238,7 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
       <h3>🏆 Matrículas por Consultor</h3>
       <div id="cConsultorOuter" style="height:380px;overflow-y:auto;overflow-x:hidden;"></div>
     </div>
-    <div class="chart-card"><h3>👔 Matrículas por Gestor</h3><canvas id="cGestor"></canvas></div>
+    <div class="chart-card"><h3>👔 Matrículas por Gestor</h3><div id="cGestorOuter" style="height:380px;display:flex;flex-direction:column;padding:6px 2px;"></div></div>
   </div>
 
   <div class="table-card">
@@ -403,29 +403,32 @@ function renderCharts(dados) {
     }).join('');
   }
 
-  // Gráfico vertical — por gestor
-  chartG = new Chart(document.getElementById('cGestor'), {
-    type: 'bar',
-    data: {
-      labels: tGestor.map(([k]) => k.split(' ')[0]),
-      datasets: [{ data: tGestor.map(([,v]) => v), backgroundColor: cores, borderRadius: 6 }]
-    },
-    options: {
-      plugins: {
-        legend: { display: false },
-        datalabels: {
-          anchor: 'end',
-          align: 'end',
-          color: '#1A4E8C',
-          font: { weight: 'bold', size: 12 },
-          formatter: v => v
-        }
-      },
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
-      layout: { padding: { top: 20 } }
-    },
-    plugins: [ChartDataLabels]
-  });
+  // Gráfico de gestores: HTML puro — barras horizontais, ocupa todo o espaço
+  chartG = null;
+  const gestorOuter = document.getElementById('cGestorOuter');
+  const coresGestor = ['#1A4E8C','#2466B0','#3B8DD4','#5BA4E4'];
+
+  if (!tGestor.length) {
+    gestorOuter.innerHTML = '<div style="text-align:center;padding:60px 0;color:#5B6474;font-size:.85rem">Sem dados</div>';
+  } else {
+    const maxG = tGestor[0][1];
+    gestorOuter.innerHTML = tGestor.map(([nome, val], i) => {
+      const pct = ((val / maxG) * 78).toFixed(1);
+      const partes = nome.trim().split(' ');
+      const label  = partes.length > 1 ? partes[0] + ' ' + partes[partes.length - 1] : nome;
+      return `
+        <div style="display:flex;align-items:center;gap:8px;padding:0 8px;flex:1;">
+          <div style="width:130px;font-size:12px;text-align:right;white-space:nowrap;
+                      overflow:hidden;text-overflow:ellipsis;color:#2D3748;flex-shrink:0;font-weight:600;"
+               title="${nome}">${label}</div>
+          <div style="flex:1;background:#EDF2F7;border-radius:4px;height:22px;position:relative;min-width:0;">
+            <div style="width:${pct}%;background:${coresGestor[i % coresGestor.length]};
+                        height:100%;border-radius:4px;transition:width .4s ease;min-width:2px;"></div>
+          </div>
+          <div style="width:36px;font-size:13px;font-weight:800;color:#1A4E8C;flex-shrink:0;">${val}</div>
+        </div>`;
+    }).join('');
+  }
 }
 
 function filtrar() {
