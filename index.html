@@ -131,6 +131,26 @@ textarea.ctrl{resize:vertical;min-height:90px}
 .modal-erro{color:var(--vermelho);font-size:.8rem;margin-bottom:10px;display:none}
 .modal-btns{display:flex;gap:10px;justify-content:flex-end}
 
+/* Modal cadastro colaborador */
+.modal-box-lg{
+  background:#fff;border-radius:14px;padding:36px 32px;
+  width:540px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.2);
+  font-family:'Nunito',sans-serif;max-height:90vh;overflow-y:auto;
+}
+.modal-box-lg h3{color:var(--azul);font-size:1.1rem;font-weight:800;margin-bottom:4px}
+.modal-box-lg p{color:var(--cinza);font-size:.82rem;margin-bottom:20px}
+.colab-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+@media(max-width:500px){.colab-grid{grid-template-columns:1fr}}
+.colab-group{display:flex;flex-direction:column;gap:5px}
+.colab-group.full{grid-column:1/-1}
+.colab-label{font-family:'Nunito',sans-serif;font-weight:700;font-size:.82rem;color:var(--azul)}
+.colab-input{
+  padding:10px 13px;border:1.5px solid var(--borda);border-radius:9px;
+  font-family:'Nunito Sans',sans-serif;font-size:.88rem;color:#2D3748;
+  background:var(--cinza-cl);transition:border-color .2s;
+}
+.colab-input:focus{outline:none;border-color:var(--azul-c);background:#fff}
+
 /* Autocomplete Polo */
 .polo-wrap{position:relative}
 .polo-dropdown{
@@ -164,6 +184,7 @@ textarea.ctrl{resize:vertical;min-height:90px}
   </div>
   <div style="display:flex;gap:10px">
     <a href="relatorio.html" class="nav-link">📋 Meu Relatório</a>
+    <button onclick="abrirCadastroGestor()" class="nav-link" style="cursor:pointer">👤 Cadastrar Colaborador</button>
     <button onclick="abrirDashboard()" class="nav-link" style="cursor:pointer">📊 Dashboard</button>
   </div>
 </header>
@@ -1884,6 +1905,71 @@ textarea.ctrl{resize:vertical;min-height:90px}
   </div>
 </div>
 
+<!-- Modal senha gestor -->
+<div class="modal-overlay" id="modalSenhaGestor">
+  <div class="modal-box">
+    <h3>🔒 Acesso — Gestores</h3>
+    <p>Digite a senha para cadastrar um novo colaborador.</p>
+    <input class="modal-input" type="password" id="inputSenhaGestor"
+           placeholder="Senha" onkeydown="if(event.key==='Enter')verificarSenhaGestor()">
+    <div class="modal-erro" id="errSenhaGestor">Senha incorreta. Tente novamente.</div>
+    <div class="modal-btns">
+      <button class="btn btn-s" onclick="fecharModalGestor()">Cancelar</button>
+      <button class="btn btn-p" onclick="verificarSenhaGestor()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal cadastro colaborador -->
+<div class="modal-overlay" id="modalColab">
+  <div class="modal-box-lg">
+    <h3>👤 Cadastrar Novo Colaborador</h3>
+    <p>Preencha os dados do colaborador. Após o cadastro, o nome aparecerá automaticamente no formulário e você receberá uma notificação por email.</p>
+    <div class="colab-grid">
+      <div class="colab-group full">
+        <label class="colab-label">Nome Completo *</label>
+        <input class="colab-input" type="text" id="colabNome" placeholder="Nome completo do colaborador">
+      </div>
+      <div class="colab-group">
+        <label class="colab-label">Email Corporativo *</label>
+        <input class="colab-input" type="email" id="colabEmail" placeholder="email@empresa.com">
+      </div>
+      <div class="colab-group">
+        <label class="colab-label">Matrícula *</label>
+        <input class="colab-input" type="text" id="colabMatricula" placeholder="Nº da matrícula">
+      </div>
+      <div class="colab-group">
+        <label class="colab-label">Gestor Imediato *</label>
+        <select class="colab-input" id="colabGestor">
+          <option value="">Selecione o Gestor</option>
+          <option value="Claudenice Maria Sales Ribeiro Barros">Claudenice Maria Sales Ribeiro Barros</option>
+          <option value="Clayton Santos">Clayton Santos</option>
+          <option value="Jhonatan Dias">Jhonatan Dias</option>
+          <option value="Rafael Pereira">Rafael Pereira</option>
+        </select>
+      </div>
+      <div class="colab-group">
+        <label class="colab-label">Data de Admissão *</label>
+        <input class="colab-input" type="date" id="colabAdmissao">
+      </div>
+      <div class="colab-group">
+        <label class="colab-label">Canal de Atendimento *</label>
+        <select class="colab-input" id="colabCanal">
+          <option value="">Selecione</option>
+          <option value="Interno">Interno</option>
+          <option value="Externo - HAG">Externo - HAG</option>
+          <option value="Externo - HOME AGENT">Externo - HOME AGENT</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-erro" id="errColab" style="display:none;margin-bottom:12px"></div>
+    <div class="modal-btns">
+      <button class="btn btn-s" onclick="fecharModalColab()">Cancelar</button>
+      <button class="btn btn-p" id="btnSalvarColab" onclick="cadastrarColaborador()">✔ Cadastrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal senha dashboard -->
 <div class="modal-overlay" id="modalSenha">
   <div class="modal-box">
@@ -2154,6 +2240,113 @@ function verificarSenha() {
     document.getElementById('inputSenha').focus();
   }
 }
+
+// ── Cadastro de Colaboradores ──────────────────────────────
+
+function abrirCadastroGestor() {
+  document.getElementById('inputSenhaGestor').value = '';
+  document.getElementById('errSenhaGestor').style.display = 'none';
+  document.getElementById('modalSenhaGestor').classList.add('show');
+  setTimeout(() => document.getElementById('inputSenhaGestor').focus(), 100);
+}
+
+function fecharModalGestor() {
+  document.getElementById('modalSenhaGestor').classList.remove('show');
+}
+
+function verificarSenhaGestor() {
+  const senha = document.getElementById('inputSenhaGestor').value;
+  if (senha === 'Aceleradores@2026') {
+    fecharModalGestor();
+    abrirModalColab();
+  } else {
+    document.getElementById('errSenhaGestor').style.display = 'block';
+    document.getElementById('inputSenhaGestor').value = '';
+    document.getElementById('inputSenhaGestor').focus();
+  }
+}
+
+function abrirModalColab() {
+  ['colabNome','colabEmail','colabMatricula','colabAdmissao'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('colabGestor').value = '';
+  document.getElementById('colabCanal').value = '';
+  document.getElementById('errColab').style.display = 'none';
+  document.getElementById('modalColab').classList.add('show');
+  setTimeout(() => document.getElementById('colabNome').focus(), 100);
+}
+
+function fecharModalColab() {
+  document.getElementById('modalColab').classList.remove('show');
+}
+
+async function cadastrarColaborador() {
+  const nome      = document.getElementById('colabNome').value.trim();
+  const email     = document.getElementById('colabEmail').value.trim();
+  const matricula = document.getElementById('colabMatricula').value.trim();
+  const gestor    = document.getElementById('colabGestor').value;
+  const admissao  = document.getElementById('colabAdmissao').value;
+  const canal     = document.getElementById('colabCanal').value;
+
+  if (!nome || !email || !matricula || !gestor || !admissao || !canal) {
+    const err = document.getElementById('errColab');
+    err.textContent = '⚠ Preencha todos os campos obrigatórios.';
+    err.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('btnSalvarColab');
+  btn.disabled = true;
+  btn.textContent = '⏳ Salvando...';
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ _tipo: 'colaborador', nome, email, matricula, gestor, admissao, canal })
+    });
+
+    // Adiciona o novo nome ao select de consultores imediatamente
+    adicionarConsultorSelect(nome);
+
+    fecharModalColab();
+    toastMsg('✔ Colaborador cadastrado! Email de notificação enviado.');
+  } catch (_) {
+    const err = document.getElementById('errColab');
+    err.textContent = '❌ Erro ao salvar. Verifique sua conexão e tente novamente.';
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✔ Cadastrar';
+  }
+}
+
+function adicionarConsultorSelect(nome) {
+  const select = document.getElementById('consultor');
+  const jaExiste = Array.from(select.options).some(o => o.value === nome);
+  if (jaExiste) return;
+  const opt = document.createElement('option');
+  opt.value = nome;
+  opt.textContent = nome;
+  // Insere em ordem alfabética
+  const opcoes = Array.from(select.options).slice(1); // ignora o placeholder
+  const pos = opcoes.findIndex(o => o.value.localeCompare(nome, 'pt-BR') > 0);
+  if (pos === -1) select.appendChild(opt);
+  else select.options[pos + 1].before(opt);
+}
+
+async function carregarConsultores() {
+  try {
+    const resp = await fetch(`${SCRIPT_URL}?tipo=consultores`);
+    const json = await resp.json();
+    if (json.status === 'ok' && Array.isArray(json.consultores)) {
+      json.consultores.forEach(c => adicionarConsultorSelect(c.nome));
+    }
+  } catch (_) {}
+}
+
+// Carrega consultores cadastrados ao iniciar
+carregarConsultores();
 </script>
 </body>
 </html>
