@@ -244,9 +244,13 @@ textarea.ctrl{resize:vertical;min-height:90px}
         <input class="ctrl" type="text" id="candidato" placeholder="Ex.: 202612345678"
                inputmode="numeric" maxlength="20"
                oninput="validarCandidato(this)"
+               onblur="verificarDuplicata(this)"
                required>
         <div class="field-hint" id="hintCandidato" style="display:none;margin-top:6px;font-size:.8rem;color:var(--vermelho);font-weight:600">
           ⚠ O número do candidato deve começar com <strong>2026</strong>. Verifique o campo — não utilize CPF.
+        </div>
+        <div class="field-hint" id="hintDuplicata" style="display:none;margin-top:6px;font-size:.8rem;color:var(--vermelho);font-weight:600">
+          ⛔ Este candidato já foi cadastrado. Verifique o número antes de continuar.
         </div>
       </div>
 
@@ -1875,7 +1879,7 @@ textarea.ctrl{resize:vertical;min-height:90px}
     </div>
     <div class="foot">
       <button class="btn btn-s" onclick="limpar()">Limpar</button>
-      <button class="btn btn-p" onclick="registrar()">✔ Registrar Matrícula</button>
+      <button class="btn btn-p" id="btnRegistrar" onclick="registrar()">✔ Registrar Matrícula</button>
     </div>
   </div>
 </div>
@@ -1992,6 +1996,35 @@ function validarCandidato(el) {
     el.style.borderColor = '';
     hint.style.display = 'none';
   }
+  // Limpa aviso de duplicata enquanto o usuário edita
+  document.getElementById('hintDuplicata').style.display = 'none';
+}
+
+async function verificarDuplicata(el) {
+  const val = el.value.trim();
+  if (!val || !val.startsWith('2026')) return;
+
+  // 1. Verifica localStorage (instantâneo)
+  const dados = JSON.parse(localStorage.getItem(DADOS_KEY) || '[]');
+  if (dados.some(d => String(d.candidato).trim() === val)) {
+    _marcarDuplicata(el); return;
+  }
+
+  // 2. Verifica Google Sheets (fonte autoritativa)
+  try {
+    const resp = await fetch(`${SCRIPT_URL}?candidato=${encodeURIComponent(val)}`);
+    const json = await resp.json();
+    if (json.existe) { _marcarDuplicata(el); return; }
+  } catch (_) {}
+
+  // Limpa marcação se não for duplicata
+  document.getElementById('hintDuplicata').style.display = 'none';
+}
+
+function _marcarDuplicata(el) {
+  el.style.borderColor = 'var(--vermelho)';
+  el.style.boxShadow   = '0 0 0 3px rgba(217,59,59,.15)';
+  document.getElementById('hintDuplicata').style.display = 'block';
 }
 
 function limpar() {
@@ -2004,7 +2037,7 @@ function limpar() {
   document.getElementById('poloBusca').style.borderColor = '';
 }
 
-function registrar() {
+async function registrar() {
   const consultor     = document.getElementById('consultor').value.trim();
   const candidato     = document.getElementById('candidato').value.trim();
   const dataPagamento = document.getElementById('dataPagamento').value;
@@ -2036,7 +2069,42 @@ function registrar() {
     return;
   }
 
+  // Estado de loading no botão
+  const btn = document.getElementById('btnRegistrar');
+  btn.disabled = true;
+  btn.textContent = '⏳ Verificando...';
+
   const dados = JSON.parse(localStorage.getItem(DADOS_KEY) || '[]');
+
+  // 1. Verifica duplicata no localStorage (instantâneo)
+  let jaExiste = dados.some(d => String(d.candidato).trim() === candidato);
+
+  // 2. Se não achou localmente, consulta o Google Sheets (fonte autoritativa)
+  if (!jaExiste) {
+    try {
+      const resp = await fetch(`${SCRIPT_URL}?candidato=${encodeURIComponent(candidato)}`);
+      const json = await resp.json();
+      jaExiste = json.existe === true;
+    } catch (_) {
+      // Se a rede falhar, não bloqueia — o Apps Script ainda impede o duplo salvamento
+    }
+  }
+
+  if (jaExiste) {
+    btn.disabled = false;
+    btn.textContent = '✔ Registrar Matrícula';
+    toastMsg('⛔ Candidato já cadastrado! Verifique o número informado.', '#D93B3B');
+    const elCandidato = document.getElementById('candidato');
+    elCandidato.style.borderColor = 'var(--vermelho)';
+    elCandidato.style.boxShadow   = '0 0 0 3px rgba(217,59,59,.15)';
+    document.getElementById('hintDuplicata').style.display = 'block';
+    elCandidato.focus();
+    return;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✔ Registrar Matrícula';
+
   const id = dados.length ? Math.max(...dados.map(d => d.id || 0)) + 1 : 1;
   const agora = new Date().toLocaleString('pt-BR');
 
