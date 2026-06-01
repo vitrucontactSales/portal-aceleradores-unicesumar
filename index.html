@@ -8,60 +8,68 @@
 <style>
 :root{
   --azul:#1A4E8C; --azul-m:#2466B0; --azul-c:#3B8DD4;
-  --bg:#E8F2FB; --borda:#D0DFF0; --cinza:#5B6474;
-  --cinza-cl:#F4F6FA; --vermelho:#D93B3B; --verde:#1E9E62;
-  --shadow:0 4px 24px rgba(26,78,140,.10); --r:14px;
+  --bg:#0D1B2A; --card:#1A2D42; --card2:#1F3550;
+  --borda:#2A4A6B; --borda-f:#3A6090;
+  --txt:#E8F2FB; --txt2:#8BAAC8; --txt3:#5A7A9A;
+  --vermelho:#FF5555; --verde:#2ECC71;
+  --shadow:0 4px 32px rgba(0,0,0,.4); --r:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito Sans',sans-serif;background:var(--bg);min-height:100vh}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);min-height:100vh;color:var(--txt)}
+
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--card)}
+::-webkit-scrollbar-thumb{background:var(--borda-f);border-radius:3px}
 
 header{
-  background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 60%,var(--azul-c) 100%);
+  background:linear-gradient(135deg,#0A1520 0%,#0F2035 60%,#152A45 100%);
   padding:0 32px; display:flex; align-items:center;
   justify-content:space-between; height:68px;
-  box-shadow:0 2px 12px rgba(26,78,140,.18);
+  border-bottom:2px solid var(--azul-m);
+  position:sticky;top:0;z-index:100;
 }
 .logo-area{display:flex;align-items:center;gap:14px}
 .logo-svg{width:40px;height:40px}
-.h-title{font-family:'Nunito',sans-serif;color:#fff;font-size:1.12rem;font-weight:800;line-height:1.2}
-.h-sub{color:rgba(255,255,255,.75);font-size:.78rem;font-weight:600}
+.h-title{font-family:'Nunito',sans-serif;color:var(--txt);font-size:1.12rem;font-weight:800;line-height:1.2}
+.h-sub{color:var(--azul-c);font-size:.78rem;font-weight:600}
 .nav-link{
-  color:rgba(255,255,255,.85); text-decoration:none;
-  background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.2);
+  color:var(--txt2); text-decoration:none;
+  background:rgba(59,141,212,.1); border:1.5px solid var(--borda);
   border-radius:8px; padding:7px 18px;
   font-family:'Nunito',sans-serif;font-weight:700;font-size:.85rem;
-  transition:all .2s;
+  transition:all .2s; cursor:pointer;
 }
-.nav-link:hover{background:rgba(255,255,255,.25);color:#fff}
+.nav-link:hover{background:rgba(59,141,212,.2);color:var(--txt);border-color:var(--azul-c)}
 
 .wrapper{max-width:680px;margin:36px auto;padding:0 16px 60px}
-.card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--borda)}
 
 .card-head{
-  background:linear-gradient(135deg,var(--azul),var(--azul-c));
+  background:linear-gradient(135deg,#0A1520,#152A45);
   padding:28px 32px;position:relative;overflow:hidden;
+  border-bottom:3px solid var(--azul-m);
 }
 .card-head::before{
   content:'';position:absolute;right:-30px;bottom:-30px;
   width:160px;height:160px;border-radius:50%;
-  background:rgba(255,255,255,.07);
+  background:rgba(59,141,212,.06);
 }
-.card-head h1{font-family:'Nunito',sans-serif;color:#fff;font-size:1.4rem;font-weight:800;margin-bottom:4px}
-.card-head p{color:rgba(255,255,255,.78);font-size:.82rem}
+.card-head h1{font-family:'Nunito',sans-serif;color:var(--txt);font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.card-head p{color:var(--txt2);font-size:.82rem}
 
 .req-note{
-  padding:10px 32px;background:#FFF8E1;
-  border-bottom:1px solid #FFE082;font-size:.78rem;color:#7B5800;
+  padding:10px 32px;background:#1A1500;
+  border-bottom:1px solid #2D2500;font-size:.78rem;color:#C8A800;
 }
 
 .body{padding:28px 32px 24px;display:flex;flex-direction:column;gap:20px}
 .group{display:flex;flex-direction:column;gap:7px}
 .label{
   font-family:'Nunito',sans-serif;font-weight:700;font-size:.9rem;
-  color:var(--azul);display:flex;align-items:center;gap:7px;
+  color:var(--txt);display:flex;align-items:center;gap:7px;
 }
 .num{
-  background:var(--azul);color:#fff;width:22px;height:22px;
+  background:var(--azul-m);color:#fff;width:22px;height:22px;
   border-radius:50%;display:inline-flex;align-items:center;
   justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;
 }
@@ -69,20 +77,21 @@ header{
 .sw{position:relative}
 .sw::after{
   content:'▾';position:absolute;right:13px;top:50%;
-  transform:translateY(-50%);color:var(--azul-c);pointer-events:none;
+  transform:translateY(-50%);color:var(--txt3);pointer-events:none;
 }
 .ctrl{
   width:100%;padding:11px 14px;border:1.5px solid var(--borda);
   border-radius:9px;font-family:'Nunito Sans',sans-serif;
-  font-size:.92rem;color:#2D3748;background:var(--cinza-cl);
+  font-size:.92rem;color:var(--txt);background:var(--card2);
   transition:border-color .2s,box-shadow .2s;
   appearance:none;-webkit-appearance:none;
 }
 .ctrl:focus{
-  outline:none;border-color:var(--azul-c);background:#fff;
-  box-shadow:0 0 0 3px rgba(59,141,212,.15);
+  outline:none;border-color:var(--azul-c);background:#243F5E;
+  box-shadow:0 0 0 3px rgba(59,141,212,.2);
 }
-.ctrl::placeholder{color:#A0AEC0}
+.ctrl::placeholder{color:var(--txt3)}
+.ctrl option{background:#1F3550;color:var(--txt)}
 textarea.ctrl{resize:vertical;min-height:90px}
 
 .foot{padding:0 32px 28px;display:flex;justify-content:flex-end;gap:12px}
@@ -91,81 +100,106 @@ textarea.ctrl{resize:vertical;min-height:90px}
   font-weight:800;font-size:.92rem;cursor:pointer;border:none;transition:all .2s;
 }
 .btn-p{
-  background:linear-gradient(135deg,var(--azul),var(--azul-c));
-  color:#fff;box-shadow:0 3px 12px rgba(26,78,140,.25);
+  background:linear-gradient(135deg,var(--azul-m),var(--azul-c));
+  color:#fff;box-shadow:0 3px 12px rgba(36,102,176,.4);
 }
-.btn-p:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(26,78,140,.35)}
-.btn-s{background:var(--cinza-cl);color:var(--cinza);border:1.5px solid var(--borda)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(59,141,212,.5)}
+.btn-p:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-s{background:var(--card2);color:var(--txt2);border:1.5px solid var(--borda)}
 .btn-s:hover{background:var(--borda)}
 
 .toast{
   position:fixed;bottom:28px;right:28px;
-  background:var(--verde);color:#fff;padding:14px 22px;
+  background:var(--verde);color:#000;padding:14px 22px;
   border-radius:10px;font-family:'Nunito',sans-serif;font-weight:700;
-  font-size:.92rem;box-shadow:0 6px 24px rgba(0,0,0,.15);
+  font-size:.92rem;box-shadow:0 6px 24px rgba(0,0,0,.4);
   display:flex;align-items:center;gap:10px;
   transform:translateY(100px);opacity:0;
   transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:999;
 }
 .toast.show{transform:translateY(0);opacity:1}
 
-/* Modal de senha */
+/* Modais */
 .modal-overlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
   z-index:1000;align-items:center;justify-content:center;
 }
 .modal-overlay.show{display:flex}
 .modal-box{
-  background:#fff;border-radius:14px;padding:36px 32px;
-  width:320px;box-shadow:0 8px 40px rgba(0,0,0,.2);
+  background:var(--card);border-radius:14px;padding:36px 32px;
+  width:320px;box-shadow:var(--shadow);
   font-family:'Nunito',sans-serif;
+  border:1px solid var(--borda);border-top:3px solid var(--azul-c);
 }
-.modal-box h3{color:var(--azul);font-size:1.1rem;font-weight:800;margin-bottom:8px}
-.modal-box p{color:var(--cinza);font-size:.82rem;margin-bottom:18px}
+.modal-box h3{color:var(--txt);font-size:1.1rem;font-weight:800;margin-bottom:8px}
+.modal-box p{color:var(--txt2);font-size:.82rem;margin-bottom:18px}
 .modal-input{
   width:100%;padding:11px 14px;border:1.5px solid var(--borda);
   border-radius:9px;font-size:.92rem;margin-bottom:14px;
   font-family:'Nunito Sans',sans-serif;
+  background:var(--card2);color:var(--txt);
 }
-.modal-input:focus{outline:none;border-color:var(--azul-c)}
+.modal-input:focus{outline:none;border-color:var(--azul-c);box-shadow:0 0 0 3px rgba(59,141,212,.2)}
 .modal-erro{color:var(--vermelho);font-size:.8rem;margin-bottom:10px;display:none}
 .modal-btns{display:flex;gap:10px;justify-content:flex-end}
 
 /* Modal cadastro colaborador */
 .modal-box-lg{
-  background:#fff;border-radius:14px;padding:36px 32px;
-  width:540px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.2);
+  background:var(--card);border-radius:14px;padding:36px 32px;
+  width:540px;max-width:95vw;box-shadow:var(--shadow);
   font-family:'Nunito',sans-serif;max-height:90vh;overflow-y:auto;
+  border:1px solid var(--borda);border-top:3px solid var(--azul-c);
 }
-.modal-box-lg h3{color:var(--azul);font-size:1.1rem;font-weight:800;margin-bottom:4px}
-.modal-box-lg p{color:var(--cinza);font-size:.82rem;margin-bottom:20px}
+.modal-box-lg h3{color:var(--txt);font-size:1.1rem;font-weight:800;margin-bottom:4px}
+.modal-box-lg p{color:var(--txt2);font-size:.82rem;margin-bottom:20px}
 .colab-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
 @media(max-width:500px){.colab-grid{grid-template-columns:1fr}}
 .colab-group{display:flex;flex-direction:column;gap:5px}
 .colab-group.full{grid-column:1/-1}
-.colab-label{font-family:'Nunito',sans-serif;font-weight:700;font-size:.82rem;color:var(--azul)}
+.colab-label{font-family:'Nunito',sans-serif;font-weight:700;font-size:.82rem;color:var(--txt2)}
 .colab-input{
   padding:10px 13px;border:1.5px solid var(--borda);border-radius:9px;
-  font-family:'Nunito Sans',sans-serif;font-size:.88rem;color:#2D3748;
-  background:var(--cinza-cl);transition:border-color .2s;
+  font-family:'Nunito Sans',sans-serif;font-size:.88rem;color:var(--txt);
+  background:var(--card2);transition:border-color .2s;
+  appearance:none;-webkit-appearance:none;
 }
-.colab-input:focus{outline:none;border-color:var(--azul-c);background:#fff}
+.colab-input:focus{outline:none;border-color:var(--azul-c);background:#243F5E}
+.colab-input option{background:#1F3550}
+
+/* Sub-campo Modalidade */
+.num-sub {
+  background:var(--borda);color:var(--azul-c);
+  width:22px;height:22px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:.6rem;font-weight:800;flex-shrink:0;
+}
+.sub-modalidade {
+  padding:14px 18px;
+  background:#0F2035;
+  border:1.5px solid var(--borda);
+  border-left:3px solid var(--azul-c);
+  border-radius:10px;
+  display:flex;flex-direction:column;gap:8px;
+  animation:fadeIn .2s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
 
 /* Autocomplete Polo */
 .polo-wrap{position:relative}
 .polo-dropdown{
   display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
-  background:#fff;border:1.5px solid var(--azul-c);border-radius:10px;
+  background:var(--card2);border:1.5px solid var(--azul-c);border-radius:10px;
   max-height:220px;overflow-y:auto;z-index:200;
-  box-shadow:0 6px 24px rgba(26,78,140,.15);
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
 }
 .polo-item{
-  padding:10px 16px;cursor:pointer;font-size:.88rem;color:#2D3748;
-  border-bottom:1px solid #EDF2F7;transition:background .12s;
+  padding:10px 16px;cursor:pointer;font-size:.88rem;color:var(--txt);
+  border-bottom:1px solid var(--borda);transition:background .12s;
 }
 .polo-item:last-child{border-bottom:none}
-.polo-item:hover,.polo-item.ativo{background:var(--bg);color:var(--azul);font-weight:700}
-.polo-nenhum{padding:12px 16px;font-size:.85rem;color:var(--cinza);text-align:center}
+.polo-item:hover,.polo-item.ativo{background:#0F2035;color:var(--azul-c);font-weight:700}
+.polo-nenhum{padding:12px 16px;font-size:.85rem;color:var(--txt3);text-align:center}
+.field-hint{display:none;margin-top:6px;font-size:.8rem;color:var(--vermelho);font-weight:600}
 </style>
 </head>
 <body>
@@ -291,15 +325,30 @@ textarea.ctrl{resize:vertical;min-height:90px}
       </div>
 
       <div class="group">
-        <label class="label"><span class="num">6</span> Tipo de Curso <span class="req">*</span></label>
+        <label class="label"><span class="num">6</span> Modalidade de Curso <span class="req">*</span></label>
         <div class="sw">
-          <select class="ctrl" id="tipoCurso" required>
-            <option value="">Selecione o Tipo de Curso</option>
+          <select class="ctrl" id="tipoCurso" onchange="onModalidadeChange()" required>
+            <option value="">Selecione a Modalidade</option>
             <option value="Graduação">Graduação</option>
-            <option value="Pós-Graduação">Pós-Graduação</option>
             <option value="Ed. Continuada">Ed. Continuada</option>
-            <option value="Técnico">Técnico</option>
           </select>
+        </div>
+      </div>
+
+      <!-- Sub-campo: aparece apenas quando Ed. Continuada for selecionada -->
+      <div id="groupSubModalidade" style="display:none">
+        <div class="sub-modalidade">
+          <label class="label" style="font-size:.82rem;color:var(--azul-m)">
+            <span class="num-sub">↳</span> Tipo de Ed. Continuada <span class="req">*</span>
+          </label>
+          <div class="sw">
+            <select class="ctrl" id="subModalidade">
+              <option value="">Selecione o Tipo</option>
+              <option value="Pós Graduação">Pós Graduação</option>
+              <option value="Profissionalizante">Profissionalizante</option>
+              <option value="Técnico">Técnico</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -2113,6 +2162,26 @@ function _marcarDuplicata(el) {
   document.getElementById('hintDuplicata').style.display = 'block';
 }
 
+function onModalidadeChange() {
+  const val = document.getElementById('tipoCurso').value;
+  const sub = document.getElementById('groupSubModalidade');
+  if (val === 'Ed. Continuada') {
+    sub.style.display = 'block';
+  } else {
+    sub.style.display = 'none';
+    document.getElementById('subModalidade').value = '';
+  }
+}
+
+function getModalidadeFinal() {
+  const mod = document.getElementById('tipoCurso').value;
+  if (mod === 'Ed. Continuada') {
+    const sub = document.getElementById('subModalidade').value;
+    return sub ? `Ed. Continuada — ${sub}` : '';
+  }
+  return mod;
+}
+
 function limpar() {
   ['consultor','candidato','dataPagamento','linkConversa','observacoes','tipoCurso','gestor','polo'].forEach(id => {
     document.getElementById(id).value = '';
@@ -2121,6 +2190,8 @@ function limpar() {
   _poloSelecionado = '';
   document.getElementById('hintPolo').style.display = 'none';
   document.getElementById('poloBusca').style.borderColor = '';
+  document.getElementById('groupSubModalidade').style.display = 'none';
+  document.getElementById('subModalidade').value = '';
 }
 
 async function registrar() {
@@ -2135,6 +2206,11 @@ async function registrar() {
 
   if (!consultor || !candidato || !dataPagamento || !linkConversa || !tipoCurso || !gestor) {
     toastMsg('⚠ Preencha todos os campos obrigatórios.', '#D93B3B');
+    return;
+  }
+
+  if (tipoCurso === 'Ed. Continuada' && !document.getElementById('subModalidade').value) {
+    toastMsg('⚠ Selecione o tipo de Ed. Continuada.', '#D93B3B');
     return;
   }
 
@@ -2201,7 +2277,7 @@ async function registrar() {
     obs: observacoes,
     polo,
     registrado_em: agora,
-    tipo_curso: tipoCurso,
+    tipo_curso: getModalidadeFinal(),
     gestor
   });
   localStorage.setItem(DADOS_KEY, JSON.stringify(dados));
