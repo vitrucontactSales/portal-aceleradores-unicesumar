@@ -4,136 +4,141 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Meu Relatório — UniCesumar Aceleradores</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 42'><rect width='42' height='42' fill='%231A4E8C' rx='8'/><path d='M8 8 Q8 34 21 34 Q34 34 34 8' stroke='white' stroke-width='4.5' fill='none' stroke-linecap='round'/><circle cx='21' cy='14' r='5.5' fill='%2360B8F0'/><path d='M13.5 14 Q13.5 22 21 22 Q28.5 22 28.5 14' stroke='rgba(255,255,255,.55)' stroke-width='3' fill='none'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
-  --azul:#1A4E8C;--azul-m:#2466B0;--azul-c:#3B8DD4;
-  --bg:#E8F2FB;--borda:#D0DFF0;--cinza:#5B6474;
-  --cinza-cl:#F4F6FA;--verde:#1E9E62;--vermelho:#D93B3B;
-  --shadow:0 4px 24px rgba(26,78,140,.10);--r:14px;
+  --azul:#1A4E8C; --azul-m:#2466B0; --azul-c:#3B8DD4;
+  --bg:#0D1B2A; --card:#1A2D42; --card2:#1F3550;
+  --borda:#2A4A6B; --borda-f:#3A6090;
+  --txt:#E8F2FB; --txt2:#8BAAC8; --txt3:#5A7A9A;
+  --vermelho:#FF5555; --verde:#2ECC71;
+  --shadow:0 4px 32px rgba(0,0,0,.4); --r:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito Sans',sans-serif;background:var(--bg);min-height:100vh}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);min-height:100vh;color:var(--txt)}
+
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--card)}
+::-webkit-scrollbar-thumb{background:var(--borda-f);border-radius:3px}
 
 header{
-  background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 60%,var(--azul-c) 100%);
+  background:linear-gradient(135deg,#0A1520 0%,#0F2035 60%,#152A45 100%);
   padding:0 32px;display:flex;align-items:center;
   justify-content:space-between;height:68px;
-  box-shadow:0 2px 12px rgba(26,78,140,.18);
+  border-bottom:2px solid var(--azul-m);
   position:sticky;top:0;z-index:100;
 }
 .logo-area{display:flex;align-items:center;gap:14px}
 .logo-svg{width:40px;height:40px}
-.h-title{font-family:'Nunito',sans-serif;color:#fff;font-size:1.12rem;font-weight:800;line-height:1.2}
-.h-sub{color:rgba(255,255,255,.75);font-size:.78rem;font-weight:600}
+.h-title{font-family:'Nunito',sans-serif;color:var(--txt);font-size:1.12rem;font-weight:800;line-height:1.2}
+.h-sub{color:var(--azul-c);font-size:.78rem;font-weight:600}
 .nav-link{
-  color:rgba(255,255,255,.85);text-decoration:none;
-  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);
+  color:var(--txt2);text-decoration:none;
+  background:rgba(59,141,212,.1);border:1.5px solid var(--borda);
   border-radius:8px;padding:7px 18px;
   font-family:'Nunito',sans-serif;font-weight:700;font-size:.85rem;
   transition:all .2s;white-space:nowrap;
 }
-.nav-link:hover{background:rgba(255,255,255,.25);color:#fff}
+.nav-link:hover{background:rgba(59,141,212,.2);color:var(--txt);border-color:var(--azul-c)}
 
 .wrap{max-width:1100px;margin:0 auto;padding:32px 16px 60px}
 
-/* Seletor de consultor */
 .selector-card{
-  background:#fff;border-radius:var(--r);padding:32px 36px;
+  background:var(--card);border-radius:var(--r);padding:32px 36px;
   box-shadow:var(--shadow);margin-bottom:24px;
-  border-top:4px solid var(--azul-c);
+  border:1px solid var(--borda);border-top:3px solid var(--azul-m);
 }
 .selector-card h2{
   font-family:'Nunito',sans-serif;font-size:1.15rem;font-weight:800;
-  color:var(--azul);margin-bottom:6px;
+  color:var(--txt);margin-bottom:6px;
 }
-.selector-card p{font-size:.85rem;color:var(--cinza);margin-bottom:20px}
+.selector-card p{font-size:.85rem;color:var(--txt2);margin-bottom:20px}
 .selector-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
 .sel-wrap{flex:1;min-width:240px}
-.sel-label{font-size:.8rem;font-weight:700;color:var(--cinza);margin-bottom:6px;display:block}
+.sel-label{font-size:.8rem;font-weight:700;color:var(--txt2);margin-bottom:6px;display:block}
 .sel-input{
   width:100%;padding:11px 14px;border:1.5px solid var(--borda);
   border-radius:9px;font-family:'Nunito Sans',sans-serif;font-size:.92rem;
-  background:#fff;color:#2D3748;appearance:none;cursor:pointer;
+  background:var(--card2);color:var(--txt);appearance:none;cursor:pointer;
 }
-.sel-input:focus{outline:none;border-color:var(--azul-c)}
+.sel-input:focus{outline:none;border-color:var(--azul-c);box-shadow:0 0 0 3px rgba(59,141,212,.2)}
+.sel-input option{background:#1F3550;color:var(--txt)}
 
 .btn{
   padding:11px 24px;border-radius:9px;font-family:'Nunito',sans-serif;
   font-weight:800;font-size:.88rem;cursor:pointer;border:none;
   transition:all .2s;display:flex;align-items:center;gap:7px;white-space:nowrap;
 }
-.btn-primary{background:linear-gradient(135deg,var(--azul),var(--azul-c));color:#fff;box-shadow:0 3px 12px rgba(26,78,140,.25)}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(26,78,140,.35)}
-.btn-excel{background:linear-gradient(135deg,#1E6E3F,#28A745);color:#fff;box-shadow:0 3px 12px rgba(30,110,63,.25)}
-.btn-excel:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(30,110,63,.35)}
-.btn-outline{background:#fff;color:var(--azul);border:1.5px solid var(--azul)}
-.btn-outline:hover{background:var(--bg)}
+.btn-primary{background:linear-gradient(135deg,var(--azul),var(--azul-c));color:#fff;box-shadow:0 3px 12px rgba(26,78,140,.4)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(26,78,140,.5)}
+.btn-excel{background:linear-gradient(135deg,#1E6E3F,#28A745);color:#fff;box-shadow:0 3px 12px rgba(30,110,63,.3)}
+.btn-excel:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(30,110,63,.4)}
 
-/* KPIs do consultor */
 .kpi-row{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap}
 .kpi{
-  background:#fff;border-radius:var(--r);padding:18px 24px;
-  box-shadow:var(--shadow);border-top:4px solid var(--azul-c);flex:1;min-width:140px;
+  background:var(--card);border-radius:var(--r);padding:18px 24px;
+  box-shadow:var(--shadow);border:1px solid var(--borda);
+  border-top:3px solid var(--azul-m);flex:1;min-width:140px;
 }
 .kpi.green{border-top-color:var(--verde)}
-.kpi-lbl{font-size:.72rem;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:.04em}
-.kpi-val{font-family:'Nunito',sans-serif;font-size:1.9rem;font-weight:800;color:var(--azul);margin-top:4px}
+.kpi-lbl{font-size:.72rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em}
+.kpi-val{font-family:'Nunito',sans-serif;font-size:1.9rem;font-weight:800;color:var(--azul-c);margin-top:4px}
 .kpi.green .kpi-val{color:var(--verde)}
 
-/* Tabela */
-.table-card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.table-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--borda)}
 .table-hd{
   padding:16px 22px;display:flex;align-items:center;
-  justify-content:space-between;border-bottom:1.5px solid var(--borda);
+  justify-content:space-between;border-bottom:1px solid var(--borda);
   flex-wrap:wrap;gap:10px;
+  background:linear-gradient(135deg,#0A1520,#152A45);
 }
-.table-hd h3{font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;color:var(--azul)}
+.table-hd h3{font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;color:var(--txt)}
 .search{
   padding:8px 13px;border:1.5px solid var(--borda);border-radius:8px;
   font-family:'Nunito Sans',sans-serif;font-size:.85rem;width:220px;
-  background:var(--cinza-cl);
+  background:var(--card2);color:var(--txt);
 }
+.search::placeholder{color:var(--txt3)}
 .search:focus{outline:none;border-color:var(--azul-c)}
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.83rem}
 thead th{
-  background:var(--azul);color:#fff;padding:11px 14px;
+  background:#0A1520;color:var(--txt2);padding:11px 14px;
   text-align:left;font-family:'Nunito',sans-serif;
   font-weight:700;font-size:.78rem;text-transform:uppercase;
-  letter-spacing:.04em;white-space:nowrap;
+  letter-spacing:.04em;white-space:nowrap;border-bottom:1px solid var(--borda);
 }
-tbody tr{border-bottom:1px solid #EDF2F7;transition:background .15s}
-tbody tr:hover{background:var(--bg)}
-tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
+tbody tr{border-bottom:1px solid var(--borda);transition:background .15s}
+tbody tr:hover{background:var(--card2)}
+tbody td{padding:10px 14px;color:var(--txt);vertical-align:middle}
 .link-cell a{color:var(--azul-c);text-decoration:none;font-weight:700}
 .link-cell a:hover{text-decoration:underline}
-.empty{text-align:center;padding:52px 20px;color:var(--cinza)}
+.empty{text-align:center;padding:52px 20px;color:var(--txt2)}
 .empty-icon{font-size:2.5rem;margin-bottom:10px}
 .empty p{font-family:'Nunito',sans-serif;font-weight:700;font-size:.95rem}
-.empty small{font-size:.82rem}
+.empty small{font-size:.82rem;color:var(--txt3)}
 
 .pag{
   padding:12px 22px;display:flex;align-items:center;
   gap:8px;justify-content:flex-end;
-  border-top:1.5px solid var(--borda);font-size:.82rem;color:var(--cinza);
+  border-top:1px solid var(--borda);font-size:.82rem;color:var(--txt2);
 }
 .pb{
-  background:var(--cinza-cl);border:1px solid var(--borda);border-radius:6px;
-  padding:4px 10px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--azul);
+  background:var(--card2);border:1px solid var(--borda);border-radius:6px;
+  padding:4px 10px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--txt2);
 }
-.pb:hover{background:var(--bg)}
-.pb.active{background:var(--azul);color:#fff;border-color:var(--azul)}
+.pb:hover{background:var(--borda);color:var(--txt)}
+.pb.active{background:var(--azul-m);color:#fff;border-color:var(--azul-m)}
 
 .fonte-note{
-  margin-top:12px;text-align:right;
-  font-size:.75rem;color:var(--cinza);font-style:italic;
+  padding:0 22px 12px;text-align:right;
+  font-size:.75rem;color:var(--txt3);font-style:italic;
 }
 
-/* Estado inicial: resultados ocultos */
 #resultados{display:none}
-.loading{text-align:center;padding:30px;color:var(--cinza);font-style:italic}
+.loading{text-align:center;padding:30px;color:var(--txt2);font-style:italic}
 </style>
 </head>
 <body>
@@ -147,7 +152,7 @@ tbody td{padding:10px 14px;color:#2D3748;vertical-align:middle}
     </svg>
     <div>
       <div class="h-title">UniCesumar</div>
-      <div class="h-sub">Contacte Sales · Meu Relatório 52.2026</div>
+      <div class="h-sub">Contacte Sales · Meu Relatório 53.2026</div>
     </div>
   </div>
   <a href="index.html" class="nav-link">← Voltar ao Formulário</a>
