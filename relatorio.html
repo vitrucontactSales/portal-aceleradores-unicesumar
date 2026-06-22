@@ -6,6 +6,7 @@
 <title>Meu Relatório — UniCesumar Aceleradores</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 42'><rect width='42' height='42' fill='%231A4E8C' rx='8'/><path d='M8 8 Q8 34 21 34 Q34 34 34 8' stroke='white' stroke-width='4.5' fill='none' stroke-linecap='round'/><circle cx='21' cy='14' r='5.5' fill='%2360B8F0'/><path d='M13.5 14 Q13.5 22 21 22 Q28.5 22 28.5 14' stroke='rgba(255,255,255,.55)' stroke-width='3' fill='none'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
@@ -272,8 +273,10 @@ tbody td{padding:10px 14px;color:var(--txt);vertical-align:middle}
 </div>
 
 <script>
-const DADOS_KEY  = 'unicesumar_aceleradores_v2';
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwQf_QC9_-AcjaEBj-aMOUvUfmYDMDpBviCxaNF270UkLKbd3TiWbcECvSnkTx82u4Lg/exec';
+const DADOS_KEY    = 'unicesumar_aceleradores_v2';
+const SUPABASE_URL = 'https://wfequjtoutpqvfyjdrvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NYXnlMO9SZc4Sg3zxPCZtw_Uto0gecQ';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let meusRegistros = [];
 let filtrados     = [];
@@ -281,34 +284,22 @@ let pagAtual      = 1;
 const POR_PAG     = 15;
 let consultorAtual = '';
 
-function normalizarSheet(d) {
+function normalizarSupabase(d) {
   return {
-    id:            d['ID']               || d.id              || '',
-    consultor:     d['Consultor(a)']     || d.consultor       || '',
-    candidato:     d['Nº Candidato']     || d.candidato       || '',
-    data:          d['Data Pagamento']   || d.data            || '',
-    link:          d['Link da Conversa'] || d.link            || '',
-    obs:           d['Observações']      || d.obs             || '',
-    polo:          d['Polo']             || d.polo            || '',
-    registrado_em: d['Registrado Em']    || d.registrado_em   || '',
-    tipo_curso:    d['Tipo de Curso']    || d.tipo_curso      || '',
-    gestor:        d['Gestor']           || d.gestor          || '',
+    id:            d.id              || '',
+    consultor:     d.consultor       || '',
+    candidato:     d.candidato       || '',
+    data:          d.data_pagamento  || '',
+    link:          d.link_conversa   || '',
+    obs:           d.observacoes     || '',
+    polo:          d.polo            || '',
+    registrado_em: d.registrado_em   || '',
+    tipo_curso:    d.tipo_curso      || '',
+    gestor:        d.gestor          || '',
   };
 }
 
-function mesclaDados(dadosSheets) {
-  const local      = JSON.parse(localStorage.getItem(DADOS_KEY) || '[]');
-  const sheetsNorm = (dadosSheets || []).map(normalizarSheet);
-  const idsLocal   = new Set(local.map(d => String(d.id)));
-  const extras     = sheetsNorm.filter(d => !idsLocal.has(String(d.id)));
-  const todos      = [...local, ...extras];
-  // Filtra pelo consultor selecionado
-  return todos
-    .filter(d => (d.consultor||'').toLowerCase() === consultorAtual.toLowerCase())
-    .sort((a,b) => (Number(b.id)||0) - (Number(a.id)||0));
-}
-
-function buscarRelatorio() {
+async function buscarRelatorio() {
   const sel = document.getElementById('selConsultor');
   consultorAtual = sel.value;
   if (!consultorAtual) {
@@ -322,15 +313,20 @@ function buscarRelatorio() {
   document.getElementById('tableWrap').style.display = 'none';
   document.getElementById('tabelaTitulo').textContent = `📋 Matrículas de ${consultorAtual}`;
 
-  // Busca no Sheets
-  fetch(SCRIPT_URL)
-    .then(r => r.json())
-    .then(res => renderizar(res.dados || []))
-    .catch(() => renderizar([]));
+  // Busca no Supabase
+  try {
+    const { data } = await _sb.from('aceleradores_matriculas')
+      .select('*')
+      .eq('consultor', consultorAtual)
+      .order('registrado_em', { ascending: false });
+    renderizar(data || []);
+  } catch (_) {
+    renderizar([]);
+  }
 }
 
-function renderizar(dadosSheets) {
-  meusRegistros = mesclaDados(dadosSheets);
+function renderizar(dadosSupabase) {
+  meusRegistros = (dadosSupabase || []).map(normalizarSupabase);
   filtrados     = [...meusRegistros];
   pagAtual      = 1;
 
@@ -351,14 +347,8 @@ function renderizar(dadosSheets) {
   document.getElementById('kHoje').textContent   = countHoje;
   document.getElementById('kSemana').textContent = countSemana;
 
-  const localCount  = (JSON.parse(localStorage.getItem(DADOS_KEY)||'[]'))
-    .filter(d => (d.consultor||'').toLowerCase() === consultorAtual.toLowerCase()).length;
-  const sheetCount  = (dadosSheets||[])
-    .map(normalizarSheet)
-    .filter(d => (d.consultor||'').toLowerCase() === consultorAtual.toLowerCase()).length;
-
   document.getElementById('fonteNote').textContent =
-    `Dados: ${localCount} no navegador · ${sheetCount} do Google Sheets · atualizado em ${new Date().toLocaleString('pt-BR')}`;
+    `${meusRegistros.length} registros carregados do Supabase · atualizado em ${new Date().toLocaleString('pt-BR')}`;
 
   document.getElementById('loadingMsg').style.display = 'none';
   document.getElementById('tableWrap').style.display  = 'block';
