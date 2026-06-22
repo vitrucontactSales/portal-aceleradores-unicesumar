@@ -232,6 +232,14 @@ tbody td{padding:10px 14px;color:var(--txt);vertical-align:middle}
     <label>Até:</label>
     <input type="date" id="filtroDataAte" class="search" style="width:140px" onchange="filtrar()">
     <div class="filter-sep"></div>
+    <select id="filtroProcesso" class="search" style="width:180px" onchange="filtrar()">
+      <option value="">🗂 Todos os Processos</option>
+      <option value="51-2026">Processo 51-2026</option>
+      <option value="52-2026">Processo 52-2026</option>
+      <option value="53-2026">Processo 53-2026</option>
+      <option value="—">Fora dos processos</option>
+    </select>
+    <div class="filter-sep"></div>
     <select id="filtroGestor" class="search" style="width:200px" onchange="filtrar()">
       <option value="">👔 Todos os Gestores</option>
     </select>
@@ -274,6 +282,7 @@ tbody td{padding:10px 14px;color:var(--txt);vertical-align:middle}
             <th>Registrado Em</th>
             <th>Tipo de Curso</th>
             <th>Gestor</th>
+            <th>Processo Seletivo</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -307,6 +316,16 @@ function normalizarGestor(nome) {
   return nome.trim();
 }
 
+// Retorna o processo seletivo com base na data de pagamento (YYYY-MM-DD)
+function getProcesso(dataPagamento) {
+  if (!dataPagamento) return '—';
+  const d = dataPagamento.slice(0, 10);
+  if (d >= '2025-10-21' && d <= '2026-03-23') return '51-2026';
+  if (d >= '2026-03-24' && d <= '2026-06-01') return '52-2026';
+  if (d >= '2026-06-02' && d <= '2026-08-17') return '53-2026';
+  return '—';
+}
+
 // Normaliza um registro do Supabase para o formato interno
 function normalizarSupabase(d) {
   return {
@@ -320,6 +339,7 @@ function normalizarSupabase(d) {
     registrado_em: d.registrado_em   || '',
     tipo_curso:    d.tipo_curso      || '',
     gestor:        normalizarGestor(d.gestor || ''),
+    processo:      getProcesso(d.registrado_em || ''),
   };
 }
 
@@ -445,14 +465,16 @@ function renderCharts(dados) {
 }
 
 function filtrar() {
-  const q       = (document.getElementById('busca').value||'').toLowerCase();
-  const gestor  = document.getElementById('filtroGestor').value;
-  const dataDe  = document.getElementById('filtroDataDe').value;
-  const dataAte = document.getElementById('filtroDataAte').value;
+  const q        = (document.getElementById('busca').value||'').toLowerCase();
+  const gestor   = document.getElementById('filtroGestor').value;
+  const processo = document.getElementById('filtroProcesso').value;
+  const dataDe   = document.getElementById('filtroDataDe').value;
+  const dataAte  = document.getElementById('filtroDataAte').value;
 
   filtrados = todosDados.filter(d => {
     if (q && !Object.values(d).some(v => String(v||'').toLowerCase().includes(q))) return false;
     if (gestor && d.gestor !== gestor) return false;
+    if (processo && d.processo !== processo) return false;
     if (dataDe || dataAte) {
       const dt = new Date(d.registrado_em);
       if (!isNaN(dt)) {
@@ -472,7 +494,7 @@ function filtrar() {
 
   // Contador de filtro
   const contador = document.getElementById('contadorFiltro');
-  const temFiltro = q || gestor || dataDe || dataAte;
+  const temFiltro = q || gestor || processo || dataDe || dataAte;
   contador.textContent = temFiltro
     ? `${filtrados.length} de ${todosDados.length} registros`
     : '';
@@ -481,6 +503,7 @@ function filtrar() {
 function limparFiltros() {
   document.getElementById('busca').value = '';
   document.getElementById('filtroGestor').value = '';
+  document.getElementById('filtroProcesso').value = '';
   document.getElementById('filtroDataDe').value = '';
   document.getElementById('filtroDataAte').value = '';
   filtrar();
@@ -492,7 +515,7 @@ function renderTabela() {
   const pagina = filtrados.slice(inicio, inicio+POR_PAG);
 
   if (!filtrados.length) {
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty">
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty">
       <div class="empty-icon">📭</div>
       <p>Nenhum registro encontrado.</p>
       <small>Registros feitos pelo formulário aparecem aqui automaticamente.</small>
@@ -513,6 +536,7 @@ function renderTabela() {
       <td style="white-space:nowrap">${formatarDataHora(d.registrado_em)}</td>
       <td>${d.tipo_curso||'—'}</td>
       <td>${d.gestor||'—'}</td>
+      <td style="white-space:nowrap;font-weight:600;color:${d.processo==='53-2026'?'#60B8F0':d.processo==='52-2026'?'#3DAA6B':d.processo==='51-2026'?'#F5A623':'#5B6474'}">${d.processo||'—'}</td>
     </tr>`).join('');
 
   renderPaginacao();
