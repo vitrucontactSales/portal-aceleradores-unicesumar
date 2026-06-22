@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aceleradores 53.2026 — UniCesumar</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 42'><rect width='42' height='42' fill='%231A4E8C' rx='8'/><path d='M8 8 Q8 34 21 34 Q34 34 34 8' stroke='white' stroke-width='4.5' fill='none' stroke-linecap='round'/><circle cx='21' cy='14' r='5.5' fill='%2360B8F0'/><path d='M13.5 14 Q13.5 22 21 22 Q28.5 22 28.5 14' stroke='rgba(255,255,255,.55)' stroke-width='3' fill='none'/></svg>">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -2038,8 +2039,10 @@ textarea.ctrl{resize:vertical;min-height:90px}
 <div class="toast" id="toast"></div>
 
 <script>
-const DADOS_KEY  = 'unicesumar_aceleradores_v2';
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwQf_QC9_-AcjaEBj-aMOUvUfmYDMDpBviCxaNF270UkLKbd3TiWbcECvSnkTx82u4Lg/exec';
+const DADOS_KEY    = 'unicesumar_aceleradores_v2';
+const SUPABASE_URL = 'https://wfequjtoutpqvfyjdrvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NYXnlMO9SZc4Sg3zxPCZtw_Uto0gecQ';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function toastMsg(msg, cor='#1E9E62') {
   const t = document.getElementById('toast');
@@ -2146,11 +2149,11 @@ async function verificarDuplicata(el) {
     _marcarDuplicata(el); return;
   }
 
-  // 2. Verifica Google Sheets (fonte autoritativa)
+  // 2. Verifica Supabase (fonte autoritativa)
   try {
-    const resp = await fetch(`${SCRIPT_URL}?candidato=${encodeURIComponent(val)}`);
-    const json = await resp.json();
-    if (json.existe) { _marcarDuplicata(el); return; }
+    const { data } = await _sb.from('aceleradores_matriculas')
+      .select('id').eq('candidato', val).limit(1);
+    if (data && data.length > 0) { _marcarDuplicata(el); return; }
   } catch (_) {}
 
   // Limpa marcação se não for duplicata
@@ -2242,15 +2245,13 @@ async function registrar() {
   // 1. Verifica duplicata no localStorage (instantâneo)
   let jaExiste = dados.some(d => String(d.candidato).trim() === candidato);
 
-  // 2. Se não achou localmente, consulta o Google Sheets (fonte autoritativa)
+  // 2. Se não achou localmente, consulta o Supabase (fonte autoritativa)
   if (!jaExiste) {
     try {
-      const resp = await fetch(`${SCRIPT_URL}?candidato=${encodeURIComponent(candidato)}`);
-      const json = await resp.json();
-      jaExiste = json.existe === true;
-    } catch (_) {
-      // Se a rede falhar, não bloqueia — o Apps Script ainda impede o duplo salvamento
-    }
+      const { data } = await _sb.from('aceleradores_matriculas')
+        .select('id').eq('candidato', candidato).limit(1);
+      jaExiste = data && data.length > 0;
+    } catch (_) {}
   }
 
   if (jaExiste) {
@@ -2265,34 +2266,34 @@ async function registrar() {
     return;
   }
 
+  btn.textContent = '⏳ Salvando...';
+  const agora = new Date().toISOString();
+  const id = dados.length ? Math.max(...dados.map(d => Number(d.id) || 0)) + 1 : 1;
+
+  dados.push({ id, consultor, candidato, data: dataPagamento, link: linkConversa, obs: observacoes, polo, registrado_em: agora, tipo_curso: getModalidadeFinal(), gestor });
+  localStorage.setItem(DADOS_KEY, JSON.stringify(dados));
+
+  const { error } = await _sb.from('aceleradores_matriculas').insert({
+    consultor,
+    candidato,
+    data_pagamento: dataPagamento || null,
+    link_conversa:  linkConversa,
+    observacoes:    observacoes || null,
+    polo,
+    registrado_em:  agora,
+    tipo_curso:     getModalidadeFinal(),
+    gestor
+  });
+
   btn.disabled = false;
   btn.textContent = '✔ Registrar Matrícula';
 
-  const id = dados.length ? Math.max(...dados.map(d => d.id || 0)) + 1 : 1;
-  const agora = new Date().toLocaleString('pt-BR');
-
-  dados.push({
-    id, consultor, candidato,
-    data: dataPagamento,
-    link: linkConversa,
-    obs: observacoes,
-    polo,
-    registrado_em: agora,
-    tipo_curso: getModalidadeFinal(),
-    gestor
-  });
-  localStorage.setItem(DADOS_KEY, JSON.stringify(dados));
-
-  const payload = dados[dados.length - 1];
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  }).catch(() => {});
-
-  toastMsg('✔ Matrícula registrada com sucesso!');
-  limpar();
+  if (error) {
+    toastMsg('⚠ Erro ao salvar no servidor. Tente novamente.', '#D93B3B');
+  } else {
+    toastMsg('✔ Matrícula registrada com sucesso!');
+    limpar();
+  }
 }
 
 function abrirDashboard() {
@@ -2376,18 +2377,18 @@ async function cadastrarColaborador() {
   btn.textContent = '⏳ Salvando...';
 
   try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ _tipo: 'colaborador', nome, email, matricula, gestor, admissao, canal })
+    const { error } = await _sb.from('aceleradores_colaboradores').insert({
+      nome, email, matricula, gestor,
+      data_admissao: admissao || null,
+      canal,
+      cadastrado_em: new Date().toISOString()
     });
 
-    // Adiciona o novo nome ao select de consultores imediatamente
-    adicionarConsultorSelect(nome);
+    if (error) throw error;
 
+    adicionarConsultorSelect(nome);
     fecharModalColab();
-    toastMsg('✔ Colaborador cadastrado! Email de notificação enviado.');
+    toastMsg('✔ Colaborador cadastrado com sucesso!');
   } catch (_) {
     const err = document.getElementById('errColab');
     err.textContent = '❌ Erro ao salvar. Verifique sua conexão e tente novamente.';
@@ -2414,11 +2415,9 @@ function adicionarConsultorSelect(nome) {
 
 async function carregarConsultores() {
   try {
-    const resp = await fetch(`${SCRIPT_URL}?tipo=consultores`);
-    const json = await resp.json();
-    if (json.status === 'ok' && Array.isArray(json.consultores)) {
-      json.consultores.forEach(c => adicionarConsultorSelect(c.nome));
-    }
+    const { data } = await _sb.from('aceleradores_colaboradores')
+      .select('nome').order('nome');
+    if (data) data.forEach(c => adicionarConsultorSelect(c.nome));
   } catch (_) {}
 }
 
