@@ -6,6 +6,7 @@
 <title>Dashboard — UniCesumar Aceleradores</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 42'><rect width='42' height='42' fill='%231A4E8C' rx='8'/><path d='M8 8 Q8 34 21 34 Q34 34 34 8' stroke='white' stroke-width='4.5' fill='none' stroke-linecap='round'/><circle cx='21' cy='14' r='5.5' fill='%2360B8F0'/><path d='M13.5 14 Q13.5 22 21 22 Q28.5 22 28.5 14' stroke='rgba(255,255,255,.55)' stroke-width='3' fill='none'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -285,8 +286,10 @@ tbody td{padding:10px 14px;color:var(--txt);vertical-align:middle}
 </div>
 
 <script>
-const DADOS_KEY  = 'unicesumar_aceleradores_v2';
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwQf_QC9_-AcjaEBj-aMOUvUfmYDMDpBviCxaNF270UkLKbd3TiWbcECvSnkTx82u4Lg/exec';
+const DADOS_KEY    = 'unicesumar_aceleradores_v2';
+const SUPABASE_URL = 'https://wfequjtoutpqvfyjdrvo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_NYXnlMO9SZc4Sg3zxPCZtw_Uto0gecQ';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let todosDados = [];
 let filtrados  = [];
@@ -304,32 +307,29 @@ function normalizarGestor(nome) {
   return nome.trim();
 }
 
-// Normaliza um registro do Google Sheets para o formato interno
-function normalizarSheet(d) {
+// Normaliza um registro do Supabase para o formato interno
+function normalizarSupabase(d) {
   return {
-    id:           d['ID']              || d.id              || '',
-    consultor:    d['Consultor(a)']    || d.consultor       || '',
-    candidato:    d['Nº Candidato']    || d.candidato       || '',
-    data:         d['Data Pagamento']  || d.data            || '',
-    link:         d['Link da Conversa']|| d.link            || '',
-    obs:          d['Observações']     || d.obs             || '',
-    polo:         d['Polo']            || d.polo            || '',
-    registrado_em:d['Registrado Em']   || d.registrado_em   || '',
-    tipo_curso:   d['Tipo de Curso']   || d.tipo_curso      || '',
-    gestor:       normalizarGestor(d['Gestor'] || d.gestor  || ''),
+    id:            d.id              || '',
+    consultor:     d.consultor       || '',
+    candidato:     d.candidato       || '',
+    data:          d.data_pagamento  || '',
+    link:          d.link_conversa   || '',
+    obs:           d.observacoes     || '',
+    polo:          d.polo            || '',
+    registrado_em: d.registrado_em   || '',
+    tipo_curso:    d.tipo_curso      || '',
+    gestor:        normalizarGestor(d.gestor || ''),
   };
 }
 
-function carregarDados(dadosSheets) {
-  const local = JSON.parse(localStorage.getItem(DADOS_KEY) || '[]');
-  // Normaliza gestor também nos dados locais (registros antigos podem ter nome diferente)
-  const localNorm  = local.map(d => ({...d, gestor: normalizarGestor(d.gestor)}));
-  // Normaliza registros do Sheets e mescla sem duplicar por ID
-  const sheetsNorm = (dadosSheets || []).map(normalizarSheet);
-  const idsLocal   = new Set(localNorm.map(d => String(d.id)));
-  const extras     = sheetsNorm.filter(d => !idsLocal.has(String(d.id)));
-  todosDados = [...localNorm, ...extras];
-  todosDados.sort((a,b) => (Number(b.id)||0) - (Number(a.id)||0));
+function carregarDados(dadosSupabase) {
+  todosDados = (dadosSupabase || []).map(normalizarSupabase);
+  todosDados.sort((a,b) => {
+    const ta = new Date(a.registrado_em || 0).getTime() || 0;
+    const tb = new Date(b.registrado_em || 0).getTime() || 0;
+    return tb - ta;
+  });
 }
 
 function checkAuth() {
@@ -607,22 +607,40 @@ function renderizarTudo(dadosSheets) {
   renderCharts(filtrados);
   renderTabela();
 
-  const localCount = JSON.parse(localStorage.getItem(DADOS_KEY)||'[]').length;
-  const sheetCount = (dadosSheets||[]).length;
-  const agora      = new Date().toLocaleString('pt-BR');
+  const agora = new Date().toLocaleString('pt-BR');
   document.getElementById('subAtualizado').textContent = `Atualizado em: ${agora}`;
   document.getElementById('fonteNote').textContent =
-    `Dados: ${localCount} no navegador · ${sheetCount} do Google Sheets`;
+    `${todosDados.length} registros carregados do Supabase · ${agora}`;
 }
 
-function iniciarDashboard() {
+async function iniciarDashboard() {
   document.getElementById('subAtualizado').textContent = 'Carregando dados...';
-  document.getElementById('fonteNote').textContent = 'Carregando dados do Google Sheets…';
+  document.getElementById('fonteNote').textContent = 'Carregando dados do Supabase…';
 
-  fetch(SCRIPT_URL)
-    .then(r => r.json())
-    .then(res => renderizarTudo(res.dados || []))
-    .catch(() => renderizarTudo([]));
+  try {
+    const PAGE = 1000;
+    let todos = [], from = 0;
+
+    while (true) {
+      const { data, error } = await _sb.from('aceleradores_matriculas')
+        .select('*')
+        .order('registrado_em', { ascending: false })
+        .range(from, from + PAGE - 1);
+
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+      todos = todos.concat(data);
+      if (data.length < PAGE) break;
+      from += PAGE;
+
+      document.getElementById('fonteNote').textContent = `Carregando… ${todos.length} registros`;
+    }
+
+    renderizarTudo(todos);
+  } catch (_) {
+    renderizarTudo([]);
+    document.getElementById('fonteNote').textContent = 'Erro ao carregar dados. Tente recarregar a página.';
+  }
 }
 
 function init() {
