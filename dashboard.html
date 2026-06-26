@@ -273,11 +273,20 @@ tbody td{padding:10px 14px;color:var(--txt);vertical-align:middle}
   </div>
 
   <div class="chart-card" style="margin-bottom:24px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <h3>📈 Evolução Temporal de Matrículas</h3>
-      <div style="display:flex;gap:6px">
-        <button id="btnSemana" class="toggle-btn active" onclick="setModoEvolucao('semana')">Semana</button>
-        <button id="btnMes"    class="toggle-btn"        onclick="setModoEvolucao('mes')">Mês</button>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <select id="filtroProcessoEvolucao" class="search" style="width:170px;padding:5px 10px;font-size:.78rem" onchange="setProcessoEvolucao(this.value)">
+          <option value="">🗂 Todos os Processos</option>
+          <option value="51-2026">Processo 51-2026</option>
+          <option value="52-2026">Processo 52-2026</option>
+          <option value="53-2026">Processo 53-2026</option>
+        </select>
+        <div style="display:flex;gap:6px">
+          <button id="btnDia"    class="toggle-btn"        onclick="setModoEvolucao('dia')">Dia</button>
+          <button id="btnSemana" class="toggle-btn active" onclick="setModoEvolucao('semana')">Semana</button>
+          <button id="btnMes"    class="toggle-btn"        onclick="setModoEvolucao('mes')">Mês</button>
+        </div>
       </div>
     </div>
     <div style="height:300px;position:relative">
@@ -418,7 +427,8 @@ function top10(campo, dados) {
 }
 
 let chartC = null, chartG = null, chartEvolucao = null;
-let modoEvolucao = 'semana';
+let modoEvolucao    = 'semana';
+let processoEvolucao = '';
 
 // Início de cada processo (todas Terças-feiras)
 const PROCESS_STARTS = {
@@ -444,7 +454,9 @@ function agruparPorPeriodo(dados, modo) {
     const dt = new Date(d.registrado_em);
     if (isNaN(dt)) return;
     let chave;
-    if (modo === 'semana') {
+    if (modo === 'dia') {
+      chave = dt.toISOString().slice(0, 10);
+    } else if (modo === 'semana') {
       chave = getWeekStartTue(dt).toISOString().slice(0, 10);
     } else {
       chave = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
@@ -454,7 +466,14 @@ function agruparPorPeriodo(dados, modo) {
   return Object.keys(grupos).sort().map(k => ({ chave: k, total: grupos[k] }));
 }
 
+const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
 function formatarChaveEvolucao(chave, modo, refStart) {
+  if (modo === 'dia') {
+    const dt = new Date(chave + 'T00:00:00');
+    const [, m, d] = chave.split('-');
+    return `${DIAS_SEMANA[dt.getDay()]} ${d}/${m}`;
+  }
   if (modo === 'semana') {
     const weekDate = new Date(chave + 'T00:00:00');
     const wNum = Math.round((weekDate - refStart) / (7 * 24 * 60 * 60 * 1000)) + 1;
@@ -466,13 +485,22 @@ function formatarChaveEvolucao(chave, modo, refStart) {
 }
 
 function renderEvolucao(dados) {
-  const periodos = agruparPorPeriodo(dados, modoEvolucao);
   const ctx = document.getElementById('chartEvolucao');
-  if (!ctx || !periodos.length) return;
+  if (!ctx) return;
 
-  // Referência para numeração W: início do processo selecionado ou primeira semana dos dados
-  const processo = (document.getElementById('filtroProcesso') || {}).value || '';
-  const refStart  = PROCESS_STARTS[processo]
+  // Se o gráfico tem processo próprio selecionado, filtra sobre todosDados
+  // para ser independente dos filtros globais
+  const dadosChart = processoEvolucao
+    ? todosDados.filter(d => d.processo === processoEvolucao)
+    : dados;
+
+  const periodos = agruparPorPeriodo(dadosChart, modoEvolucao);
+  if (!periodos.length) return;
+
+  // Referência W: processo local → processo global → primeira semana dos dados
+  const processoGlobal = (document.getElementById('filtroProcesso') || {}).value || '';
+  const refStart = PROCESS_STARTS[processoEvolucao]
+    || PROCESS_STARTS[processoGlobal]
     || new Date(periodos[0].chave + 'T00:00:00');
 
   const labels    = periodos.map(p => formatarChaveEvolucao(p.chave, modoEvolucao, refStart));
@@ -484,7 +512,8 @@ function renderEvolucao(dados) {
 
   if (chartEvolucao) { chartEvolucao.destroy(); chartEvolucao = null; }
 
-  const mostrarLabels = periodos.length <= 26;
+  const limiteLabels  = modoEvolucao === 'dia' ? 35 : modoEvolucao === 'mes' ? 99 : 26;
+  const mostrarLabels = periodos.length <= limiteLabels;
 
   chartEvolucao = new Chart(ctx, {
     type: 'line',
@@ -549,8 +578,14 @@ function renderEvolucao(dados) {
 
 function setModoEvolucao(modo) {
   modoEvolucao = modo;
+  document.getElementById('btnDia').classList.toggle('active',    modo === 'dia');
   document.getElementById('btnSemana').classList.toggle('active', modo === 'semana');
-  document.getElementById('btnMes').classList.toggle('active', modo === 'mes');
+  document.getElementById('btnMes').classList.toggle('active',    modo === 'mes');
+  renderEvolucao(filtrados);
+}
+
+function setProcessoEvolucao(processo) {
+  processoEvolucao = processo;
   renderEvolucao(filtrados);
 }
 
