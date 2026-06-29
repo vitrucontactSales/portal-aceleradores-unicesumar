@@ -187,6 +187,53 @@ tbody td{padding:10px 14px;color:var(--txt);vertical-align:middle}
 .filter-sep{
   width:1px;height:28px;background:var(--borda);margin:0 4px;
 }
+
+/* Botões de ação na tabela */
+.btn-acao{
+  padding:3px 8px;border-radius:6px;font-size:.72rem;font-weight:700;
+  cursor:pointer;border:1.5px solid;transition:all .15s;
+  font-family:'Nunito',sans-serif;white-space:nowrap;line-height:1.6;
+}
+.btn-edit{color:#60B8F0;border-color:#3A6090;background:rgba(59,141,212,.1)}
+.btn-edit:hover{background:rgba(59,141,212,.25)}
+.btn-del{color:#FF5555;border-color:#7A2B2B;background:rgba(255,85,85,.1)}
+.btn-del:hover{background:rgba(255,85,85,.25)}
+.btn-dup{color:#2ECC71;border-color:#1A6A3F;background:rgba(46,204,113,.1)}
+.btn-dup:hover{background:rgba(46,204,113,.25)}
+.btn-save{color:#2ECC71;border-color:#1A6A3F;background:rgba(46,204,113,.15)}
+.btn-save:hover{background:rgba(46,204,113,.3)}
+.btn-cancel{color:#F5A623;border-color:#7A5010;background:rgba(245,166,35,.1)}
+.btn-cancel:hover{background:rgba(245,166,35,.25)}
+tr.editing td{background:rgba(59,141,212,.05)}
+.edit-input{
+  width:100%;padding:4px 7px;border:1.5px solid var(--azul-c);border-radius:6px;
+  background:var(--card2);color:var(--txt);font-size:.8rem;
+  font-family:'Nunito Sans',sans-serif;
+}
+.edit-input:focus{outline:none;box-shadow:0 0 0 2px rgba(59,141,212,.3)}
+/* Modal Atribuir */
+#modalAtribuir{
+  display:none;position:fixed;inset:0;background:rgba(5,12,24,.87);
+  z-index:3000;align-items:center;justify-content:center;
+}
+#modalAtribuir.show{display:flex}
+.modal-box{
+  background:var(--card);border-radius:16px;padding:36px 30px;
+  width:420px;max-width:95vw;
+  box-shadow:var(--shadow);font-family:'Nunito',sans-serif;
+  border:1px solid var(--borda);border-top:3px solid var(--verde);
+}
+.modal-box h3{color:var(--txt);font-size:1.1rem;font-weight:800;margin-bottom:6px}
+.modal-box p{color:var(--txt2);font-size:.84rem;margin-bottom:20px;line-height:1.5}
+.modal-field{margin-bottom:14px}
+.modal-field label{display:block;font-size:.78rem;font-weight:700;color:var(--txt2);margin-bottom:5px}
+.modal-field input{
+  width:100%;padding:10px 13px;border:1.5px solid var(--borda);border-radius:8px;
+  background:var(--card2);color:var(--txt);font-size:.9rem;
+  font-family:'Nunito Sans',sans-serif;
+}
+.modal-field input:focus{outline:none;border-color:var(--azul-c);box-shadow:0 0 0 2px rgba(59,141,212,.2)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
 </style>
 </head>
 <body>
@@ -314,6 +361,7 @@ tbody td{padding:10px 14px;color:var(--txt);vertical-align:middle}
             <th>Tipo de Curso</th>
             <th>Gestor</th>
             <th>Processo Seletivo</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -323,6 +371,25 @@ tbody td{padding:10px 14px;color:var(--txt);vertical-align:middle}
     <div class="fonte-note" id="fonteNote"></div>
   </div>
 
+</div>
+
+<!-- Modal: Atribuir candidato a outro consultor -->
+<div id="modalAtribuir">
+  <div class="modal-box">
+    <h3>👥 Atribuir a outro consultor</h3>
+    <p id="modalAtribuirInfo" style="color:var(--azul-c);font-size:.85rem;font-weight:700;margin-bottom:6px"></p>
+    <p>O registro original é mantido. Um novo registro idêntico será criado com o nome do consultor informado abaixo.</p>
+    <div class="modal-field">
+      <label>Nome completo do consultor</label>
+      <input id="novoConsultorInput" type="text" placeholder="Ex: Tauany Bezerra De Souza"
+             onkeydown="if(event.key==='Enter')confirmarAtribuicao()">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="fecharModalAtribuir()">Cancelar</button>
+      <button class="btn" style="background:linear-gradient(135deg,#1E6E3F,#28A745);color:#fff"
+              onclick="confirmarAtribuicao()">✅ Confirmar</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -708,7 +775,7 @@ function renderTabela() {
   const pagina = filtrados.slice(inicio, inicio+POR_PAG);
 
   if (!filtrados.length) {
-    tbody.innerHTML = `<tr><td colspan="11"><div class="empty">
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty">
       <div class="empty-icon">📭</div>
       <p>Nenhum registro encontrado.</p>
       <small>Registros feitos pelo formulário aparecem aqui automaticamente.</small>
@@ -717,20 +784,29 @@ function renderTabela() {
     return;
   }
 
-  tbody.innerHTML = pagina.map((d,i) => `
-    <tr>
-      <td><strong>${d.id||inicio+i+1}</strong></td>
+  tbody.innerHTML = pagina.map((d) => {
+    const sid = d.id ? d.id.replace(/'/g,"\\'") : '';
+    const corP = d.processo==='53-2026'?'#60B8F0':d.processo==='52-2026'?'#3DAA6B':d.processo==='51-2026'?'#F5A623':'#5B6474';
+    return `
+    <tr data-id="${d.id||''}">
+      <td><strong style="font-size:.75rem;color:var(--txt2)" title="${d.id||''}">${d.id ? d.id.slice(0,8)+'…' : '—'}</strong></td>
       <td>${d.consultor||'—'}</td>
       <td>${d.candidato||'—'}</td>
       <td style="white-space:nowrap">${d.data ? formatarData(d.data) : '—'}</td>
       <td class="link-cell">${d.link ? `<a href="${d.link}" target="_blank">🔗 Abrir</a>` : '—'}</td>
-      <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${(d.obs||'').replace(/"/g,'&quot;')}">${d.obs||'—'}</td>
+      <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${(d.obs||'').replace(/"/g,'&quot;')}">${d.obs||'—'}</td>
       <td>${d.polo||'—'}</td>
       <td style="white-space:nowrap">${formatarDataHora(d.registrado_em)}</td>
       <td>${d.tipo_curso||'—'}</td>
       <td>${d.gestor||'—'}</td>
-      <td style="white-space:nowrap;font-weight:600;color:${d.processo==='53-2026'?'#60B8F0':d.processo==='52-2026'?'#3DAA6B':d.processo==='51-2026'?'#F5A623':'#5B6474'}">${d.processo||'—'}</td>
-    </tr>`).join('');
+      <td style="white-space:nowrap;font-weight:600;color:${corP}">${d.processo||'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-acao btn-edit"   onclick="editarRegistro('${sid}')">✏️</button>
+        <button class="btn-acao btn-dup"    onclick="abrirModalAtribuir('${sid}')">👥</button>
+        <button class="btn-acao btn-del"    onclick="excluirRegistro('${sid}')">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
 
   renderPaginacao();
 }
@@ -860,6 +936,150 @@ async function iniciarDashboard() {
     document.getElementById('fonteNote').textContent = 'Erro ao carregar dados. Tente recarregar a página.';
   }
 }
+
+// ─── Edição inline e ações na tabela ──────────────────────────────────────
+
+let registroEditando  = null;
+let registroAtribuindo = null;
+
+const TIPOS_CURSO = ['Graduação','Pós-Graduação','Ed. Continuada','Técnico'];
+const GESTORES_LIST = [
+  'Claudenice Maria Sales Ribeiro Barros',
+  'Clayton Santos',
+  'Jhonatan Dias',
+  'Rafael Pereira',
+];
+
+function editarRegistro(id) {
+  if (registroEditando) cancelarEdicao();
+  const d = filtrados.find(r => r.id === id);
+  if (!d) return;
+  registroEditando = id;
+
+  const tr = document.querySelector(`tr[data-id="${id}"]`);
+  if (!tr) return;
+  tr.classList.add('editing');
+
+  const esc = v => (v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+
+  tr.innerHTML = `
+    <td><strong style="font-size:.75rem;color:var(--txt2)">${id.slice(0,8)}…</strong></td>
+    <td><input class="edit-input" id="ed_consultor" value="${esc(d.consultor)}" style="min-width:110px"></td>
+    <td><input class="edit-input" id="ed_candidato" value="${esc(d.candidato)}" style="min-width:100px"></td>
+    <td><input class="edit-input" type="date" id="ed_data" value="${d.data||''}"></td>
+    <td><input class="edit-input" id="ed_link" value="${esc(d.link)}" style="min-width:90px"></td>
+    <td><input class="edit-input" id="ed_obs"  value="${esc(d.obs)}"  style="min-width:90px"></td>
+    <td><input class="edit-input" id="ed_polo" value="${esc(d.polo)}" style="min-width:90px"></td>
+    <td style="white-space:nowrap;font-size:.78rem">${formatarDataHora(d.registrado_em)}</td>
+    <td><select class="edit-input" id="ed_tipo">${TIPOS_CURSO.map(t=>`<option${d.tipo_curso===t?' selected':''}>${t}</option>`).join('')}</select></td>
+    <td><select class="edit-input" id="ed_gestor">${GESTORES_LIST.map(g=>`<option${d.gestor===g?' selected':''}>${g}</option>`).join('')}</select></td>
+    <td style="font-size:.78rem">${d.processo||'—'}</td>
+    <td style="white-space:nowrap">
+      <button class="btn-acao btn-save"   onclick="salvarEdicao('${id}')">💾 Salvar</button>&nbsp;
+      <button class="btn-acao btn-cancel" onclick="cancelarEdicao()">✕</button>
+    </td>`;
+}
+
+async function salvarEdicao(id) {
+  const btn = document.querySelector('.btn-save');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+
+  const updates = {
+    consultor:      (document.getElementById('ed_consultor').value||'').trim(),
+    candidato:      (document.getElementById('ed_candidato').value||'').trim(),
+    data_pagamento: document.getElementById('ed_data').value || null,
+    link_conversa:  document.getElementById('ed_link').value.trim() || null,
+    observacoes:    document.getElementById('ed_obs').value.trim()  || null,
+    polo:           document.getElementById('ed_polo').value.trim() || null,
+    tipo_curso:     document.getElementById('ed_tipo').value,
+    gestor:         document.getElementById('ed_gestor').value,
+  };
+
+  const { error } = await _sb.from('aceleradores_matriculas').update(updates).eq('id', id);
+  if (error) {
+    alert('Erro ao salvar: ' + error.message);
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Salvar'; }
+    return;
+  }
+
+  // Atualiza registro local sem recarregar tudo
+  const idx = todosDados.findIndex(r => r.id === id);
+  if (idx >= 0) {
+    todosDados[idx].consultor  = updates.consultor;
+    todosDados[idx].candidato  = updates.candidato;
+    todosDados[idx].data       = updates.data_pagamento || '';
+    todosDados[idx].link       = updates.link_conversa  || '';
+    todosDados[idx].obs        = updates.observacoes    || '';
+    todosDados[idx].polo       = updates.polo           || '';
+    todosDados[idx].tipo_curso = updates.tipo_curso;
+    todosDados[idx].gestor     = normalizarGestor(updates.gestor);
+  }
+
+  registroEditando = null;
+  filtrar();
+}
+
+function cancelarEdicao() {
+  registroEditando = null;
+  renderTabela();
+}
+
+async function excluirRegistro(id) {
+  const d = filtrados.find(r => r.id === id);
+  const info = d ? `Candidato: ${d.candidato}\nConsultor: ${d.consultor}` : `ID: ${id}`;
+  if (!confirm(`Confirma exclusão do registro?\n\n${info}\n\nEsta ação não pode ser desfeita.`)) return;
+
+  const { error } = await _sb.from('aceleradores_matriculas').delete().eq('id', id);
+  if (error) { alert('Erro ao excluir: ' + error.message); return; }
+
+  todosDados = todosDados.filter(r => r.id !== id);
+  filtrar();
+}
+
+function abrirModalAtribuir(id) {
+  const d = filtrados.find(r => r.id === id);
+  if (!d) return;
+  registroAtribuindo = id;
+  document.getElementById('modalAtribuirInfo').textContent =
+    `Candidato: ${d.candidato} — Consultor atual: ${d.consultor}`;
+  document.getElementById('novoConsultorInput').value = '';
+  document.getElementById('modalAtribuir').classList.add('show');
+  setTimeout(() => document.getElementById('novoConsultorInput').focus(), 120);
+}
+
+function fecharModalAtribuir() {
+  document.getElementById('modalAtribuir').classList.remove('show');
+  registroAtribuindo = null;
+}
+
+async function confirmarAtribuicao() {
+  const novoConsultor = (document.getElementById('novoConsultorInput').value||'').trim();
+  if (!novoConsultor) { alert('Digite o nome do consultor.'); return; }
+
+  const d = filtrados.find(r => r.id === registroAtribuindo);
+  if (!d) { fecharModalAtribuir(); return; }
+
+  const novoRegistro = {
+    consultor:      novoConsultor,
+    candidato:      d.candidato,
+    data_pagamento: d.data   || null,
+    link_conversa:  d.link   || null,
+    observacoes:    d.obs    || null,
+    polo:           d.polo   || null,
+    registrado_em:  d.registrado_em || null,
+    tipo_curso:     d.tipo_curso    || null,
+    gestor:         d.gestor        || null,
+  };
+
+  const { error } = await _sb.from('aceleradores_matriculas').insert([novoRegistro]);
+  if (error) { alert('Erro ao atribuir: ' + error.message); return; }
+
+  fecharModalAtribuir();
+  alert(`✅ Candidato ${d.candidato} atribuído também para:\n${novoConsultor}\n\nRecarregando dados...`);
+  iniciarDashboard();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function init() {
   if (sessionStorage.getItem('dash_auth') === '1') {
