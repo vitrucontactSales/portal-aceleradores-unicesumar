@@ -304,7 +304,7 @@ textarea.ctrl{resize:vertical;min-height:90px}
                onblur="verificarDuplicata(this)"
                required>
         <div class="field-hint" id="hintCandidato" style="display:none;margin-top:6px;font-size:.8rem;color:var(--vermelho);font-weight:600">
-          ⚠ O número do candidato deve começar com <strong>2026</strong>. Verifique o campo — não utilize CPF.
+          ⚠ O número do candidato deve começar com o ano (<strong>2026</strong>, <strong>2027</strong>…). Verifique o campo — não utilize CPF.
         </div>
         <div class="field-hint" id="hintDuplicata" style="display:none;margin-top:6px;font-size:.8rem;color:var(--vermelho);font-weight:600">
           ⛔ Este candidato já foi cadastrado. Verifique o número antes de continuar.
@@ -2125,10 +2125,13 @@ document.addEventListener('click', e => {
 });
 // ──────────────────────────────────────────────────────────────
 
+// Candidato: ano 2026 em diante (AAAA + processo + sequência). Aceita 2027, 2028...
+const CANDIDATO_OK = v => /^20(2[6-9]|[3-9]\d)/.test(v);
+
 function validarCandidato(el) {
   const hint = document.getElementById('hintCandidato');
   const val  = el.value.trim();
-  if (val.length > 0 && !val.startsWith('2026')) {
+  if (val.length > 0 && !CANDIDATO_OK(val)) {
     el.style.borderColor = 'var(--vermelho)';
     hint.style.display = 'block';
   } else {
@@ -2141,7 +2144,7 @@ function validarCandidato(el) {
 
 async function verificarDuplicata(el) {
   const val = el.value.trim();
-  if (!val || !val.startsWith('2026')) return;
+  if (!val || !CANDIDATO_OK(val)) return;
 
   // 1. Verifica localStorage (instantâneo)
   const dados = JSON.parse(localStorage.getItem(DADOS_KEY) || '[]');
@@ -2227,9 +2230,9 @@ async function registrar() {
     return;
   }
 
-  // Valida número do candidato — deve começar com 2026
-  if (!candidato.startsWith('2026')) {
-    toastMsg('⚠ Número do candidato inválido. Deve começar com 2026.', '#D93B3B');
+  // Valida número do candidato — deve começar com o ano (2026+)
+  if (!CANDIDATO_OK(candidato)) {
+    toastMsg('⚠ Número do candidato inválido. Deve começar com o ano (2026, 2027…).', '#D93B3B');
     document.getElementById('candidato').focus();
     document.getElementById('hintCandidato').style.display = 'block';
     return;
