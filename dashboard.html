@@ -918,6 +918,7 @@ async function iniciarDashboard() {
     while (true) {
       const { data, error } = await _sb.from('aceleradores_matriculas')
         .select('*')
+        .is('excluido_em', null)
         .order('registrado_em', { ascending: false })
         .range(from, from + PAGE - 1);
 
@@ -1027,9 +1028,9 @@ function cancelarEdicao() {
 async function excluirRegistro(id) {
   const d = filtrados.find(r => r.id === id);
   const info = d ? `Candidato: ${d.candidato}\nConsultor: ${d.consultor}` : `ID: ${id}`;
-  if (!confirm(`Confirma exclusão do registro?\n\n${info}\n\nEsta ação não pode ser desfeita.`)) return;
+  if (!confirm(`Confirma exclusão do registro?\n\n${info}\n\nO registro sai das listas e relatórios (fica guardado no banco).`)) return;
 
-  const { error } = await _sb.from('aceleradores_matriculas').delete().eq('id', id);
+  const { error } = await _sb.from('aceleradores_matriculas').update({ excluido_em: new Date().toISOString() }).eq('id', id);
   if (error) { alert('Erro ao excluir: ' + error.message); return; }
 
   todosDados = todosDados.filter(r => r.id !== id);
