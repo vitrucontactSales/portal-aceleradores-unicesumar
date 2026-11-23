@@ -317,7 +317,6 @@ async function buscarRelatorio() {
   try {
     const { data } = await _sb.from('aceleradores_matriculas')
       .select('*')
-      .is('excluido_em', null)
       .eq('consultor', consultorAtual)
       .order('registrado_em', { ascending: false });
     renderizar(data || []);
