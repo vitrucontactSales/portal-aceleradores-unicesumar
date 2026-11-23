@@ -2155,7 +2155,7 @@ async function verificarDuplicata(el) {
   // 2. Verifica Supabase (fonte autoritativa)
   try {
     const { data } = await _sb.from('aceleradores_matriculas')
-      .select('id').eq('candidato', val).is('excluido_em', null).limit(1);
+      .select('id').eq('candidato', val).limit(1);
     if (data && data.length > 0) { _marcarDuplicata(el); return; }
   } catch (_) {}
 
@@ -2252,7 +2252,7 @@ async function registrar() {
   if (!jaExiste) {
     try {
       const { data } = await _sb.from('aceleradores_matriculas')
-        .select('id').eq('candidato', candidato).is('excluido_em', null).limit(1);
+        .select('id').eq('candidato', candidato).limit(1);
       jaExiste = data && data.length > 0;
     } catch (_) {}
   }
